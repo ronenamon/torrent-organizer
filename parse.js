@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 10);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -80,8 +80,8 @@ module.exports = require("fs");
 
 
 var fs = __webpack_require__(0);
-var patts = __webpack_require__(6);
-var https = __webpack_require__(9);
+var patts = __webpack_require__(5);
+var https = __webpack_require__(8);
 
 module.exports = function () {
 
@@ -253,95 +253,11 @@ module.exports = function () {
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
+module.exports = __webpack_require__(6);
 
-
-var fs = __webpack_require__(0);
-var HelperFuncs = __webpack_require__(1);
-
-var Helper = new HelperFuncs();
-
-module.exports = function () {
-
-	/*
- 	Renames file with their matched names ->
- 		if !match found -> renames with same name to "No match Found"
- 		if match found with a title -> renames it to it's respective season folder
- 		if match found without a title -> renames it to it's respective season folder without adding title
- */
-	this.renameFile = function (_ref) {
-		var basePath = _ref.basePath,
-		    randomFolder = _ref.randomFolder,
-		    file = _ref.file,
-		    apiData = _ref.apiData,
-		    ext = _ref.ext;
-
-		return new Promise(function (resolve) {
-			var fileName = file.slice(file.lastIndexOf("/"), file.length);
-
-			var _findCorrectNames = findCorrectNames(fileName, apiData),
-			    res = _findCorrectNames.res,
-			    name = _findCorrectNames.name,
-			    season = _findCorrectNames.season,
-			    episode = _findCorrectNames.episode,
-			    title = _findCorrectNames.title;
-
-			if (res === null) {
-				fs.renameSync(file, "" + basePath + randomFolder + "/No Match Found" + fileName);resolve();
-			} //Return null -> Just move it to new folder
-			basePath = "" + basePath + randomFolder + "/" + name + "/Season " + season;
-			var baseName = basePath + "/" + name + " S" + (season < 10 ? "0" + season : season) + "E" + episode; //For instance - Broad City S01E02
-			res ? fs.renameSync(file, baseName + " - " + title + ext) : fs.renameSync(file, "" + baseName + ext);
-			resolve();
-		}).catch(function (e) {
-			return console.log(e);
-		});
-	};
-
-	/*
- 	Gets all the files video and the others. Finds title for each of them, if found returns title, if not return name
- 	if name not found - returns null
- */
-	function findCorrectNames(file, apiData) {
-		var _Helper$getFileStats = Helper.getFileStats(file),
-		    name = _Helper$getFileStats.name,
-		    season = _Helper$getFileStats.season,
-		    episode = _Helper$getFileStats.episode;
-
-		if (!name) return { res: null };
-		var title = getEpisodeTitle({ name: name, season: season, episode: episode }, apiData);
-		return title ? { episode: episode, title: title, name: name, season: season, res: true } : { res: false, name: name, season: season, episode: episode };
-	}
-
-	/*Finds title by matching Episode number with apiData's Episode Number */
-	function getEpisodeTitle(_ref2, apiData) {
-		var name = _ref2.name,
-		    season = _ref2.season,
-		    episode = _ref2.episode;
-
-		var title = void 0;
-		apiData.forEach(function (currShow) {
-			if (name !== currShow.Title) return;
-			episode < 10 ? episode = parseInt(episode) : episode;
-			currShow.Episodes.forEach(function (_ref3) {
-				var Episode = _ref3.Episode,
-				    Title = _ref3.Title;
-				return episode == Episode ? title = Title : "";
-			});
-		});
-		return title ? title.replace(/[^\w\s-\.]/gi, "") : null; //Repalce is for weird titles like - Horseback Riding\Man Zone
-	}
-};
 
 /***/ }),
 /* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(7);
-
-
-/***/ }),
-/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -367,7 +283,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // This method of obtaining a reference to the global object needs to be
@@ -388,7 +304,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(8);
+module.exports = __webpack_require__(7);
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -404,7 +320,7 @@ if (hadRuntime) {
 
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports) {
 
 /**
@@ -1133,13 +1049,13 @@ if (hadRuntime) {
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = require("https");
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1148,7 +1064,7 @@ module.exports = require("https");
 ///basePath = basePath + "/"; //Adding "/" instead of "\" because I can use find the first one in an array and second is a escape char (Decrepted, I guess)
 //basePath = basePath.replace(/\\/g, "/"); //Oct 29 2016, Changed this
 
-var _regenerator = __webpack_require__(5);
+var _regenerator = __webpack_require__(4);
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
 
@@ -1327,7 +1243,7 @@ var fs = __webpack_require__(0);
 var HelperFuncs = __webpack_require__(1);
 var SubsFuncs = __webpack_require__(2);
 var GetFilesFuncs = __webpack_require__(3);
-var RenameFuncs = __webpack_require__(4);
+var RenameFuncs = __webpack_require__(10);
 
 var Helper = new HelperFuncs();
 var Subs = new SubsFuncs();
@@ -1755,6 +1671,90 @@ function makeInitialFolders(_ref12) {
 			return b.length - a.length;
 		}), video: video, other: other };
 }
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var fs = __webpack_require__(0);
+var HelperFuncs = __webpack_require__(1);
+
+var Helper = new HelperFuncs();
+
+module.exports = function () {
+
+	/*
+ 	Renames file with their matched names ->
+ 		if !match found -> renames with same name to "No match Found"
+ 		if match found with a title -> renames it to it's respective season folder
+ 		if match found without a title -> renames it to it's respective season folder without adding title
+ */
+	this.renameFile = function (_ref) {
+		var basePath = _ref.basePath,
+		    randomFolder = _ref.randomFolder,
+		    file = _ref.file,
+		    apiData = _ref.apiData,
+		    ext = _ref.ext;
+
+		return new Promise(function (resolve) {
+			var fileName = file.slice(file.lastIndexOf("/"), file.length);
+
+			var _findCorrectNames = findCorrectNames(fileName, apiData),
+			    res = _findCorrectNames.res,
+			    name = _findCorrectNames.name,
+			    season = _findCorrectNames.season,
+			    episode = _findCorrectNames.episode,
+			    title = _findCorrectNames.title;
+
+			if (res === null) {
+				fs.renameSync(file, "" + basePath + randomFolder + "/No Match Found" + fileName);resolve();
+			} //Return null -> Just move it to new folder
+			basePath = "" + basePath + randomFolder + "/" + name + "/Season " + season;
+			var baseName = basePath + "/" + name + " S" + (season < 10 ? "0" + season : season) + "E" + episode; //For instance - Broad City S01E02
+			res ? fs.renameSync(file, baseName + " - " + title + ext) : fs.renameSync(file, "" + baseName + ext);
+			resolve();
+		}).catch(function (e) {
+			return console.log(e);
+		});
+	};
+
+	/*
+ 	Gets all the files video and the others. Finds title for each of them, if found returns title, if not return name
+ 	if name not found - returns null
+ */
+	function findCorrectNames(file, apiData) {
+		var _Helper$getFileStats = Helper.getFileStats(file),
+		    name = _Helper$getFileStats.name,
+		    season = _Helper$getFileStats.season,
+		    episode = _Helper$getFileStats.episode;
+
+		if (!name) return { res: null };
+		var title = getEpisodeTitle({ name: name, season: season, episode: episode }, apiData);
+		return title ? { episode: episode, title: title, name: name, season: season, res: true } : { res: false, name: name, season: season, episode: episode };
+	}
+
+	/*Finds title by matching Episode number with apiData's Episode Number */
+	function getEpisodeTitle(_ref2, apiData) {
+		var name = _ref2.name,
+		    season = _ref2.season,
+		    episode = _ref2.episode;
+
+		var title = void 0;
+		apiData.forEach(function (currShow) {
+			if (name !== currShow.Title) return;
+			episode < 10 ? episode = parseInt(episode) : episode;
+			currShow.Episodes.forEach(function (_ref3) {
+				var Episode = _ref3.Episode,
+				    Title = _ref3.Title;
+				return episode == Episode ? title = Title : "";
+			});
+		});
+		return title ? title.replace(/[^\w\s-\.]/gi, "") : null; //Repalce is for weird titles like - Horseback Riding\Man Zone
+	}
+};
 
 /***/ })
 /******/ ]);
