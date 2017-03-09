@@ -4,7 +4,7 @@
     "private": true,
     "main": "parse.js",
     "scripts": {
-        "start": "babel ./v8/index.js --watch -o ./v8/parse.js"
+        "start": "webpack --watch --progress"
     },
     "author": "\"Lord-Lavios\"",
     "license": "MIT",

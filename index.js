@@ -6,27 +6,26 @@ const fs = require("fs");
 const HelperFuncs = require("./helper");
 const SubsFuncs = require("./fixSubs");
 const GetFilesFuncs = require("./getFiles.js");
-const RenameFuncs = require("./renamefile");
 
 const Helper = new HelperFuncs();
 const Subs = new SubsFuncs();
 const GetFiles = new GetFilesFuncs();
-const Rename = new RenameFuncs();
 
 /* Start of the Function */
 (async function () {
 	try {
-		let basePath = "H:/Tv Shows".replace(/\\/g, "/");
+		let basePath = "H:/New folder".replace(/\\/g, "/");
 		if(!basePath) return;
 		if(basePath[basePath.length - 1] !== "/") basePath += "/";
 		let files = GetFiles.readFiles(basePath);
 		let {dirs, video, other} = filterFiles(files);
-		let shows = getShows(video);
-		let [apiData, posters] = await getApiData(shows);
-		let randomFolder = Helper.generateRandomFolderName();
-		await makeShowFolders({basePath, randomFolder, shows, posters});
-		await Promise.all(other.map(async file => await whatToDoWithFile({basePath, randomFolder, file, apiData})));
-		console.log("Removing dirs");
+		let [shows, movies] = filterShowsAndMovies(video);
+		let [showsData, posters, moviesData] = await apiShowsAndMovies(shows, movies);
+		basePath += Helper.generateRandomFolderName();
+		await makeShowAndMoviesFolders({basePath, shows, posters, "movies": moviesData});
+		let newNames = findNewNamesForFiles({video, showsData, moviesData});
+		newNames.map(({oldFile, newFile}) => fs.renameSync(oldFile, basePath + newFile));
+		other.map(file => whatToDoWithFile(file, basePath));
 		removeDirs(dirs);
 	} catch(e) {
 		console.log("Organize error");
@@ -34,23 +33,56 @@ const Rename = new RenameFuncs();
 	}
 })();
 
+
+function findNewNamesForFiles({video, showsData, moviesData}) {
+	let names = [];
+	video.map(file => {
+		file.type === "movie" ? names.push(findNewNameForMovie(file, moviesData)) :
+		names.push(findNewNameForShow(file, showsData));
+	});
+	return names.filter(({newFile}) => newFile); //No API Match but pattern match
+}
+
+function findNewNameForShow(fileData, showsData) {
+	let newFile = {oldFile: fileData.file};
+	let ext = fileData.file.slice(fileData.file.length - 4, fileData.file.length);
+	let showStats = Helper.getFileStats({file: fileData.file, episode: fileData.episode});
+	let title = Helper.getEpisodeTitle(showStats, showsData);
+	let {name, season, episode} = showStats;
+	let baseName = `/Tv Shows/${name}/Season ${season}/${name} S${season < 10 ? "0" + season : season}E${episode}`;
+	title ? newFile["newFile"] = `${baseName} - ${title}${ext}` :
+		newFile["newFile"] = baseName + ext;
+	return newFile;
+}
+
+function findNewNameForMovie({file, name}, moviesData) {
+	let newFile = {oldFile: file};
+	file = file.slice(file.lastIndexOf("/") + 1, file.length);
+	let ext = file.slice(file.length - 4, file.length);
+	moviesData.map(item => {
+		if(name !== item.Title) return;
+		let {Title, Year, Runtime, Rating} = item;
+		newFile["newFile"] = `/Movies/${Title} ${Year} (${Runtime}) (${Rating})/${Title} ${Year}${ext}`;
+	});
+	return newFile;
+}
+
+/* Renames video and sub files, removes hearing aid from subs and delete files other than video files */
+function whatToDoWithFile(file, basePath) {
+	let fileName = file.slice(file.lastIndexOf("/") + 1, file.length);
+	let ext = file.slice(file.length - 4, file.length);
+	if(ext === ".srt") Subs.fixSubs(file);
+	/\.mkv|\.mp4|\.srt|\.avi/g.test(ext) ? fs.renameSync(file, `${basePath}/No Match Found/${fileName}`) : fs.unlinkSync(file);
+}
+
+
 /* Gets shows data through OmdbAPI with their poster url's */
-function getApiData(shows) {
+function apiShowsAndMovies(shows, movies) {
 	try {
 		return new Promise(async resolve => {
-			let [apiData, posters] = [[],[]];
-			for(let showName of Object.keys(shows)) {
-				let {season} = shows[showName];
-				showName = showName.split(" ").join("%20"); //For api
-				let {Poster} = await Helper.getData(`/?t=${showName}`);
-				posters.push({title: showName, url: Poster});
-				for(let item of season) {
-					apiData.push(await Helper.getData(`/?t=${showName}&Season=${item}`));
-				}
-			}
-			apiData = apiData.filter(({Response}) => Response === "True");
-			posters = posters.filter(({url, title}) => url && title);
-			resolve([apiData, posters]);
+			let [showsData, posters] = await apiShows(shows);
+			let moviesData = await apiMovies(movies);
+			resolve([showsData, posters, moviesData]);
 		});
 	} catch(e) {
 		console.log("Execute API error");
@@ -58,28 +90,56 @@ function getApiData(shows) {
 	}
 }
 
-/* Renames video and sub files, removes hearing aid from subs and delete files other than video files */
-async function whatToDoWithFile(info) {
+/* Gets movies Data form api */
+async function apiMovies(movies) {
 	try {
-		let ext = info.file.slice(info.file.length - 4, info.file.length);
-		if (ext === ".srt") Subs.fixSubs(info.file);
-		/\.mkv|\.mp4|\.srt|\.avi/g.test(ext) ? await Rename.renameFile({...info, ext}) : fs.unlinkSync(info.file);
-	} catch(e) { console.log(e); }
+		return new Promise(async resolve => {
+			let apiData = [];
+			for(let movie of movies) {
+				movie = movie.split(" ").join("%20");
+				let {Title, Year, Poster, Runtime, imdbRating, Response} = await Helper.getData(`/?t=${movie}`);
+				apiData.push({Title, Year, Poster, Runtime, Rating: imdbRating, Response});
+			}
+			resolve(apiData.filter(({Response}) => Response === "True"));
+		});
+	} catch(e) { console.log("apiMovies Error"); console.log(new Error(e)); }
+
+}
+
+/* Gets shows data from api */
+async function apiShows(shows) {
+	try {
+		return new Promise(async resolve => {
+			let [apiData, posters] = [[], []];
+			for(let showName of Object.keys(shows)) {
+				let {season} = shows[showName];
+				showName = showName.split(" ").join("%20"); //For api
+				let baseUrl = `/?t=${showName}`;
+				let {Poster} = await Helper.getData(baseUrl);
+				posters.push({title: showName, url: Poster});
+				for(let item of season) { apiData.push(await Helper.getData(`${baseUrl}&Season=${item}`)); }
+			}
+			resolve([apiData.filter(({Response}) => Response === "True"), posters.filter(({url, title}) => url && title)]);
+		});
+	} catch(e) { console.log("apiMovies Error"); console.log(new Error(e)); }
 }
 
 /* Gets show names with their respective season numbers */
-function getShows(files) {
-	let shows = {};
-	files.map(file => {
-		let {name, season} = Helper.getFileStats(file);
-		if(!name) return;
-		let sameShow = Helper.sameShow(shows, name, season);
-		if(!sameShow) { shows[name] = {season: [season], length: 1}; return; } //New show detected
-		if(!sameShow.newSeason) return; //Same show detected
-		shows[name].season.push(season); //Same show but different season
-		shows[name].length += 1;
+function filterShowsAndMovies(video) {
+	let [shows, movies] = [{}, []];
+	video.map(({file, type, episode, name}) => {
+		if(type === "movie") return movies.length ? movies.indexOf(name) === -1 ? movies.push(name) : "" : movies.push(name);
+		{
+			let {name, season} = Helper.getFileStats({file, episode, type});
+			if(!name) return;
+			let sameShow = Helper.sameShow(shows, name, season);
+			if(!sameShow) { shows[name] = {season: [season], length: 1}; return; } //New show detected
+			if(!sameShow.newSeason) return; //Same show detected
+			shows[name].season.push(season); //Same show but different season
+			shows[name].length += 1;
+		}
 	});
-	return shows;
+	return [shows, movies];
 }
 
 /* Removes empty dirs after the rename of the files */
@@ -87,18 +147,13 @@ function removeDirs(files) {
 	files.map(file => fs.rmdirSync(file)); //This just does not throw any errors
 }
 
-/* Makes folder for the shows with; Season and showName */
-function makeShowFolders({basePath, randomFolder, shows, posters}) {
+/* Makes folder for shows and movies */
+function makeShowAndMoviesFolders({basePath, shows, posters, movies}) {
 	try {
 		return new Promise(async resolve => {
-			makeInitialFolders({basePath, randomFolder});
-			basePath += `${randomFolder}/`;
-			for(let showName of Object.keys(shows)) {
-				let {season} = shows[showName];
-				fs.mkdirSync(`${basePath}${showName}`);
-				await savePosters({basePath, showName, posters});
-				season.map(season => fs.mkdirSync(`${basePath}${showName}/Season ${season}`));
-			}
+			fs.mkdirSync(basePath);
+			["Tv Shows", "Movies", "No Match Found"].map(str => fs.mkdirSync(`${basePath}/${str}`)); //Initial Folders
+			await Promise.all([makeShowsFolders({shows, basePath, posters}), makeMoviesFolders(movies, basePath)]);
 			console.log("Done!");
 			resolve();
 		});
@@ -108,10 +163,37 @@ function makeShowFolders({basePath, randomFolder, shows, posters}) {
 	}
 }
 
-/*Makes the random folder and the no match folder */
-function makeInitialFolders({basePath, randomFolder}) {
-	fs.mkdirSync(`${basePath}${randomFolder}`);
-	fs.mkdirSync(`${basePath}${randomFolder}/No Match Found`);
+/* Makes folder for the shows with; Season and showName */
+function makeShowsFolders({shows, posters, basePath}) {
+	try {
+		return new Promise(async resolve => {
+			for(let showName of Object.keys(shows)) {
+				let {season} = shows[showName];
+				fs.mkdirSync(`${basePath}/Tv Shows/${showName}`);
+				await savePosters({basePath, showName, posters});
+				season.map(season => fs.mkdirSync(`${basePath}/Tv Shows/${showName}/Season ${season}`));
+			}
+			resolve();
+		});
+	} catch(e) { console.log("makeShowsFolders error"); console.log(new Error(e)); }
+}
+
+/* Makes folder for the movies with name, year, rating and runtime */
+function makeMoviesFolders(movies, basePath) {
+	try {
+		return new Promise(async resolve => {
+			for(let movie of movies) {
+				let keys = Object.keys(movie);
+				keys.splice(2, 1); //Remove Poster
+				keys.forEach(item => movie[item] = movie[item].replace(/[\|><\*:\?\"/\/]/g, ""));
+				let {Title, Rating, Poster, Runtime, Year} = movie;
+				let folder = `${Title} ${Year} (${Runtime}) (${Rating})`;
+				fs.mkdirSync(`${basePath}/Movies/${folder}`);
+				if(Poster !== "N/A") await Helper.saveImage(Poster, `${basePath}/Movies/${folder}/${Title}.jpg`);
+			}
+			resolve();
+		});
+	} catch(e) { console.log("makeMoviesFolders error"); console.log(new Error(e)); }
 }
 
 /* Downloads and save posters */
@@ -120,7 +202,7 @@ async function savePosters({basePath, posters, showName}) {
 		for(let {title, url} of posters) {
 			title = title.replace(/%20/g, "").toLowerCase();
 			title === showName.replace(/\s/gi, "").toLowerCase() ?
-				await Helper.saveImage(url, `${basePath}${showName}/${showName}.jpg`) : "";
+				await Helper.saveImage(url, `${basePath}/Tv Shows/${showName}/${showName}.jpg`) : "";
 		}
 	} catch(e) { console.log(e); }
 }
@@ -131,9 +213,10 @@ async function savePosters({basePath, posters, showName}) {
 function filterFiles(files) {
 	let [dirs, video, other] = [[],[],[]];
 	files.map(file => {
-		let response = Helper.getFileStats(file);
 		if(Helper.isDir(file)) { dirs.push(file); return; }
-		if(response && /\.mkv|\.mp4|\.avi|/.test(file)) video.push(file);
+		let {episode = null, type, name = null} = Helper.isMatch(file);
+		if(/Sample/gi.test(file)) { other.push(file); return; }
+		if(type && /\.mkv|\.mp4|\.srt|\.avi/gi.test(file)) video.push({file, type, episode, name});
 		other.push(file);
 	});
 	return {dirs: dirs.sort((a, b) => b.length - a.length), video, other};
