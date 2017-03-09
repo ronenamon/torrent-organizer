@@ -9,6 +9,8 @@ Your torrented files probably look like this
 This script makes it look like this
 
 ###Tv Shows
-![Tv Shows](./tv.png)
+![Tv Shows]
+(./tv.PNG)
 ###Movies
-![Movies](./movies.png)
+![Movies]
+(./movies.PNG)
