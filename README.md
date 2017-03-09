@@ -10,7 +10,7 @@ This script makes it look like this
 
 ###Tv Shows
 ![Tv Shows]
-(https://s7.postimg.org/4z5xf70fr/image.png)
+(http://ultraimg.com/images/2017/03/09/p8DJ.png)
 ###Movies
 ![Movies]
-(https://s7.postimg.org/wl43m4uev/movies.png)
+(http://ultraimg.com/images/2017/03/09/p8DT.png)
