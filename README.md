@@ -10,7 +10,7 @@ This script makes it look like this
 
 ###Tv Shows
 ![Tv Shows]
-(./tv.PNG)
+(./images/tv.PNG)
 ###Movies
 ![Movies]
-(./movies.PNG)
+(./images/movies.PNG)
