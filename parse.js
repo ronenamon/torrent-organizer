@@ -1097,7 +1097,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 /* Gets movies Data form api */
 var apiMovies = function () {
-	var _ref10 = _asyncToGenerator(_regenerator2.default.mark(function _callee4(movies) {
+	var _ref11 = _asyncToGenerator(_regenerator2.default.mark(function _callee4(movies) {
 		var _this2 = this;
 
 		return _regenerator2.default.wrap(function _callee4$(_context4) {
@@ -1106,8 +1106,8 @@ var apiMovies = function () {
 					case 0:
 						_context4.prev = 0;
 						return _context4.abrupt("return", new Promise(function () {
-							var _ref11 = _asyncToGenerator(_regenerator2.default.mark(function _callee3(resolve) {
-								var apiData, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, movie, _ref13, Title, Year, Poster, Runtime, imdbRating, Response;
+							var _ref12 = _asyncToGenerator(_regenerator2.default.mark(function _callee3(resolve) {
+								var apiData, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, movie, _ref14, Title, Year, Poster, Runtime, imdbRating, Response;
 
 								return _regenerator2.default.wrap(function _callee3$(_context3) {
 									while (1) {
@@ -1133,13 +1133,13 @@ var apiMovies = function () {
 												return Helper.getData("/?t=" + movie);
 
 											case 11:
-												_ref13 = _context3.sent;
-												Title = _ref13.Title;
-												Year = _ref13.Year;
-												Poster = _ref13.Poster;
-												Runtime = _ref13.Runtime;
-												imdbRating = _ref13.imdbRating;
-												Response = _ref13.Response;
+												_ref14 = _context3.sent;
+												Title = _ref14.Title;
+												Year = _ref14.Year;
+												Poster = _ref14.Poster;
+												Runtime = _ref14.Runtime;
+												imdbRating = _ref14.imdbRating;
+												Response = _ref14.Response;
 
 												apiData.push({ Title: Title, Year: Year, Poster: Poster, Runtime: Runtime, Rating: imdbRating, Response: Response });
 
@@ -1183,8 +1183,8 @@ var apiMovies = function () {
 												return _context3.finish(28);
 
 											case 36:
-												resolve(apiData.filter(function (_ref12) {
-													var Response = _ref12.Response;
+												resolve(apiData.filter(function (_ref13) {
+													var Response = _ref13.Response;
 													return Response === "True";
 												}));
 
@@ -1197,7 +1197,7 @@ var apiMovies = function () {
 							}));
 
 							return function (_x3) {
-								return _ref11.apply(this, arguments);
+								return _ref12.apply(this, arguments);
 							};
 						}()));
 
@@ -1214,7 +1214,7 @@ var apiMovies = function () {
 	}));
 
 	return function apiMovies(_x2) {
-		return _ref10.apply(this, arguments);
+		return _ref11.apply(this, arguments);
 	};
 }();
 
@@ -1222,7 +1222,7 @@ var apiMovies = function () {
 
 
 var apiShows = function () {
-	var _ref14 = _asyncToGenerator(_regenerator2.default.mark(function _callee6(shows) {
+	var _ref15 = _asyncToGenerator(_regenerator2.default.mark(function _callee6(shows) {
 		var _this3 = this;
 
 		return _regenerator2.default.wrap(function _callee6$(_context6) {
@@ -1231,8 +1231,8 @@ var apiShows = function () {
 					case 0:
 						_context6.prev = 0;
 						return _context6.abrupt("return", new Promise(function () {
-							var _ref15 = _asyncToGenerator(_regenerator2.default.mark(function _callee5(resolve) {
-								var apiData, posters, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, showName, season, baseUrl, _ref18, Poster, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, item;
+							var _ref16 = _asyncToGenerator(_regenerator2.default.mark(function _callee5(resolve) {
+								var apiData, posters, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, showName, season, baseUrl, _ref19, Poster, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, item;
 
 								return _regenerator2.default.wrap(function _callee5$(_context5) {
 									while (1) {
@@ -1260,8 +1260,8 @@ var apiShows = function () {
 												return Helper.getData(baseUrl);
 
 											case 13:
-												_ref18 = _context5.sent;
-												Poster = _ref18.Poster;
+												_ref19 = _context5.sent;
+												Poster = _ref19.Poster;
 
 												posters.push({ title: showName, url: Poster });
 												_iteratorNormalCompletion3 = true;
@@ -1365,12 +1365,12 @@ var apiShows = function () {
 												return _context5.finish(54);
 
 											case 62:
-												resolve([apiData.filter(function (_ref16) {
-													var Response = _ref16.Response;
+												resolve([apiData.filter(function (_ref17) {
+													var Response = _ref17.Response;
 													return Response === "True";
-												}), posters.filter(function (_ref17) {
-													var url = _ref17.url,
-													    title = _ref17.title;
+												}), posters.filter(function (_ref18) {
+													var url = _ref18.url,
+													    title = _ref18.title;
 													return url && title;
 												})]);
 
@@ -1383,7 +1383,7 @@ var apiShows = function () {
 							}));
 
 							return function (_x5) {
-								return _ref15.apply(this, arguments);
+								return _ref16.apply(this, arguments);
 							};
 						}()));
 
@@ -1400,7 +1400,7 @@ var apiShows = function () {
 	}));
 
 	return function apiShows(_x4) {
-		return _ref14.apply(this, arguments);
+		return _ref15.apply(this, arguments);
 	};
 }();
 
@@ -1409,12 +1409,12 @@ var apiShows = function () {
 
 /* Downloads and save posters */
 var savePosters = function () {
-	var _ref25 = _asyncToGenerator(_regenerator2.default.mark(function _callee10(_ref26) {
-		var basePath = _ref26.basePath,
-		    posters = _ref26.posters,
-		    showName = _ref26.showName;
+	var _ref26 = _asyncToGenerator(_regenerator2.default.mark(function _callee10(_ref27) {
+		var basePath = _ref27.basePath,
+		    posters = _ref27.posters,
+		    showName = _ref27.showName;
 
-		var _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, _ref28, title, url;
+		var _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, _ref29, title, url;
 
 		return _regenerator2.default.wrap(function _callee10$(_context12) {
 			while (1) {
@@ -1433,8 +1433,8 @@ var savePosters = function () {
 							break;
 						}
 
-						_ref28 = _step6.value;
-						title = _ref28.title, url = _ref28.url;
+						_ref29 = _step6.value;
+						title = _ref29.title, url = _ref29.url;
 
 						title = title.replace(/%20/g, "").toLowerCase();
 
@@ -1509,7 +1509,7 @@ var savePosters = function () {
 	}));
 
 	return function savePosters(_x9) {
-		return _ref25.apply(this, arguments);
+		return _ref26.apply(this, arguments);
 	};
 }();
 
@@ -1540,7 +1540,7 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee() {
 			switch (_context.prev = _context.next) {
 				case 0:
 					_context.prev = 0;
-					basePath = "H:/Movies".replace(/\\/g, "/");
+					basePath = "H:/New folder".replace(/\\/g, "/");
 
 					if (basePath) {
 						_context.next = 4;
@@ -1554,12 +1554,10 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee() {
 					files = GetFiles.readFiles(basePath);
 					_filterFiles = filterFiles(files), dirs = _filterFiles.dirs, video = _filterFiles.video, other = _filterFiles.other;
 					_filterShowsAndMovies = filterShowsAndMovies(video), _filterShowsAndMovies2 = _slicedToArray(_filterShowsAndMovies, 2), shows = _filterShowsAndMovies2[0], movies = _filterShowsAndMovies2[1];
-
-					console.log("Filtered movies and shows");
-					_context.next = 11;
+					_context.next = 10;
 					return apiShowsAndMovies(shows, movies);
 
-				case 11:
+				case 10:
 					_ref2 = _context.sent;
 					_ref3 = _slicedToArray(_ref2, 3);
 					showsData = _ref3[0];
@@ -1567,14 +1565,12 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee() {
 					moviesData = _ref3[2];
 
 					basePath += Helper.generateRandomFolderName();
-					_context.next = 19;
+					_context.next = 18;
 					return makeShowAndMoviesFolders({ basePath: basePath, shows: shows, posters: posters, "movies": moviesData });
 
-				case 19:
-					console.log("created folders");
+				case 18:
 					newNames = findNewNamesForFiles({ video: video, showsData: showsData, moviesData: moviesData });
 
-					console.log("found names");
 					newNames.map(function (_ref4) {
 						var oldFile = _ref4.oldFile,
 						    newFile = _ref4.newFile;
@@ -1583,24 +1579,23 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee() {
 					other.map(function (file) {
 						return whatToDoWithFile(file, basePath);
 					});
-					console.log("Removing dirs");
 					removeDirs(dirs);
-					_context.next = 32;
+					_context.next = 28;
 					break;
 
-				case 28:
-					_context.prev = 28;
+				case 24:
+					_context.prev = 24;
 					_context.t0 = _context["catch"](0);
 
 					console.log("Organize error");
 					console.log(new Error(_context.t0));
 
-				case 32:
+				case 28:
 				case "end":
 					return _context.stop();
 			}
 		}
-	}, _callee, this, [[0, 28]]);
+	}, _callee, this, [[0, 24]]);
 }))();
 
 function findNewNamesForFiles(_ref5) {
@@ -1612,7 +1607,10 @@ function findNewNamesForFiles(_ref5) {
 	video.map(function (file) {
 		file.type === "movie" ? names.push(findNewNameForMovie(file, moviesData)) : names.push(findNewNameForShow(file, showsData));
 	});
-	return names;
+	return names.filter(function (_ref6) {
+		var newFile = _ref6.newFile;
+		return newFile;
+	}); //No API Match but pattern match
 }
 
 function findNewNameForShow(fileData, showsData) {
@@ -1629,9 +1627,9 @@ function findNewNameForShow(fileData, showsData) {
 	return newFile;
 }
 
-function findNewNameForMovie(_ref6, moviesData) {
-	var file = _ref6.file,
-	    name = _ref6.name;
+function findNewNameForMovie(_ref7, moviesData) {
+	var file = _ref7.file,
+	    name = _ref7.name;
 
 	var newFile = { oldFile: file };
 	file = file.slice(file.lastIndexOf("/") + 1, file.length);
@@ -1662,8 +1660,8 @@ function apiShowsAndMovies(shows, movies) {
 
 	try {
 		return new Promise(function () {
-			var _ref7 = _asyncToGenerator(_regenerator2.default.mark(function _callee2(resolve) {
-				var _ref8, _ref9, showsData, posters, moviesData;
+			var _ref8 = _asyncToGenerator(_regenerator2.default.mark(function _callee2(resolve) {
+				var _ref9, _ref10, showsData, posters, moviesData;
 
 				return _regenerator2.default.wrap(function _callee2$(_context2) {
 					while (1) {
@@ -1673,10 +1671,10 @@ function apiShowsAndMovies(shows, movies) {
 								return apiShows(shows);
 
 							case 2:
-								_ref8 = _context2.sent;
-								_ref9 = _slicedToArray(_ref8, 2);
-								showsData = _ref9[0];
-								posters = _ref9[1];
+								_ref9 = _context2.sent;
+								_ref10 = _slicedToArray(_ref9, 2);
+								showsData = _ref10[0];
+								posters = _ref10[1];
 								_context2.next = 8;
 								return apiMovies(movies);
 
@@ -1694,7 +1692,7 @@ function apiShowsAndMovies(shows, movies) {
 			}));
 
 			return function (_x) {
-				return _ref7.apply(this, arguments);
+				return _ref8.apply(this, arguments);
 			};
 		}());
 	} catch (e) {
@@ -1705,11 +1703,11 @@ function apiShowsAndMovies(shows, movies) {
 	var shows = {},
 	    movies = [];
 
-	video.map(function (_ref19) {
-		var file = _ref19.file,
-		    type = _ref19.type,
-		    episode = _ref19.episode,
-		    name = _ref19.name;
+	video.map(function (_ref20) {
+		var file = _ref20.file,
+		    type = _ref20.type,
+		    episode = _ref20.episode,
+		    name = _ref20.name;
 
 		if (type === "movie") return movies.length ? movies.indexOf(name) === -1 ? movies.push(name) : "" : movies.push(name);
 		{
@@ -1738,17 +1736,17 @@ function removeDirs(files) {
 }
 
 /* Makes folder for shows and movies */
-function makeShowAndMoviesFolders(_ref20) {
+function makeShowAndMoviesFolders(_ref21) {
 	var _this4 = this;
 
-	var basePath = _ref20.basePath,
-	    shows = _ref20.shows,
-	    posters = _ref20.posters,
-	    movies = _ref20.movies;
+	var basePath = _ref21.basePath,
+	    shows = _ref21.shows,
+	    posters = _ref21.posters,
+	    movies = _ref21.movies;
 
 	try {
 		return new Promise(function () {
-			var _ref21 = _asyncToGenerator(_regenerator2.default.mark(function _callee7(resolve) {
+			var _ref22 = _asyncToGenerator(_regenerator2.default.mark(function _callee7(resolve) {
 				return _regenerator2.default.wrap(function _callee7$(_context7) {
 					while (1) {
 						switch (_context7.prev = _context7.next) {
@@ -1773,7 +1771,7 @@ function makeShowAndMoviesFolders(_ref20) {
 			}));
 
 			return function (_x6) {
-				return _ref21.apply(this, arguments);
+				return _ref22.apply(this, arguments);
 			};
 		}());
 	} catch (e) {
@@ -1783,16 +1781,16 @@ function makeShowAndMoviesFolders(_ref20) {
 }
 
 /* Makes folder for the shows with; Season and showName */
-function makeShowsFolders(_ref22) {
+function makeShowsFolders(_ref23) {
 	var _this5 = this;
 
-	var shows = _ref22.shows,
-	    posters = _ref22.posters,
-	    basePath = _ref22.basePath;
+	var shows = _ref23.shows,
+	    posters = _ref23.posters,
+	    basePath = _ref23.basePath;
 
 	try {
 		return new Promise(function () {
-			var _ref23 = _asyncToGenerator(_regenerator2.default.mark(function _callee8(resolve) {
+			var _ref24 = _asyncToGenerator(_regenerator2.default.mark(function _callee8(resolve) {
 				var _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _loop, _iterator4, _step4;
 
 				return _regenerator2.default.wrap(function _callee8$(_context9) {
@@ -1889,7 +1887,7 @@ function makeShowsFolders(_ref22) {
 			}));
 
 			return function (_x7) {
-				return _ref23.apply(this, arguments);
+				return _ref24.apply(this, arguments);
 			};
 		}());
 	} catch (e) {
@@ -1903,7 +1901,7 @@ function makeMoviesFolders(movies, basePath) {
 
 	try {
 		return new Promise(function () {
-			var _ref24 = _asyncToGenerator(_regenerator2.default.mark(function _callee9(resolve) {
+			var _ref25 = _asyncToGenerator(_regenerator2.default.mark(function _callee9(resolve) {
 				var _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _loop2, _iterator5, _step5;
 
 				return _regenerator2.default.wrap(function _callee9$(_context11) {
@@ -1931,10 +1929,16 @@ function makeMoviesFolders(movies, basePath) {
 													folder = Title + " " + Year + " (" + Runtime + ") (" + Rating + ")";
 
 													fs.mkdirSync(basePath + "/Movies/" + folder);
-													_context10.next = 9;
+
+													if (!(Poster !== "N/A")) {
+														_context10.next = 10;
+														break;
+													}
+
+													_context10.next = 10;
 													return Helper.saveImage(Poster, basePath + "/Movies/" + folder + "/" + Title + ".jpg");
 
-												case 9:
+												case 10:
 												case "end":
 													return _context10.stop();
 											}
@@ -2002,7 +2006,7 @@ function makeMoviesFolders(movies, basePath) {
 			}));
 
 			return function (_x8) {
-				return _ref24.apply(this, arguments);
+				return _ref25.apply(this, arguments);
 			};
 		}());
 	} catch (e) {
@@ -2028,7 +2032,8 @@ function makeMoviesFolders(movies, basePath) {
 		if (/Sample/gi.test(file)) {
 			other.push(file);return;
 		}
-		type && /\.mkv|\.mp4|\.srt|\.avi/gi.test(file) ? video.push({ file: file, type: type, episode: episode, name: name }) : other.push(file);
+		if (type && /\.mkv|\.mp4|\.srt|\.avi/gi.test(file)) video.push({ file: file, type: type, episode: episode, name: name });
+		other.push(file);
 	});
 	return { dirs: dirs.sort(function (a, b) {
 			return b.length - a.length;

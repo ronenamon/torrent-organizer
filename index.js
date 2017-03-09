@@ -14,22 +14,18 @@ const GetFiles = new GetFilesFuncs();
 /* Start of the Function */
 (async function () {
 	try {
-		let basePath = "H:/Movies".replace(/\\/g, "/");
+		let basePath = "H:/New folder".replace(/\\/g, "/");
 		if(!basePath) return;
 		if(basePath[basePath.length - 1] !== "/") basePath += "/";
 		let files = GetFiles.readFiles(basePath);
 		let {dirs, video, other} = filterFiles(files);
 		let [shows, movies] = filterShowsAndMovies(video);
-		console.log("Filtered movies and shows");
 		let [showsData, posters, moviesData] = await apiShowsAndMovies(shows, movies);
 		basePath += Helper.generateRandomFolderName();
 		await makeShowAndMoviesFolders({basePath, shows, posters, "movies": moviesData});
-		console.log("created folders");
 		let newNames = findNewNamesForFiles({video, showsData, moviesData});
-		console.log("found names");
 		newNames.map(({oldFile, newFile}) => fs.renameSync(oldFile, basePath + newFile));
 		other.map(file => whatToDoWithFile(file, basePath));
-		console.log("Removing dirs");
 		removeDirs(dirs);
 	} catch(e) {
 		console.log("Organize error");
@@ -44,7 +40,7 @@ function findNewNamesForFiles({video, showsData, moviesData}) {
 		file.type === "movie" ? names.push(findNewNameForMovie(file, moviesData)) :
 		names.push(findNewNameForShow(file, showsData));
 	});
-	return names;
+	return names.filter(({newFile}) => newFile); //No API Match but pattern match
 }
 
 function findNewNameForShow(fileData, showsData) {
@@ -193,7 +189,7 @@ function makeMoviesFolders(movies, basePath) {
 				let {Title, Rating, Poster, Runtime, Year} = movie;
 				let folder = `${Title} ${Year} (${Runtime}) (${Rating})`;
 				fs.mkdirSync(`${basePath}/Movies/${folder}`);
-				await Helper.saveImage(Poster, `${basePath}/Movies/${folder}/${Title}.jpg`);
+				if(Poster !== "N/A") await Helper.saveImage(Poster, `${basePath}/Movies/${folder}/${Title}.jpg`);
 			}
 			resolve();
 		});
@@ -220,7 +216,8 @@ function filterFiles(files) {
 		if(Helper.isDir(file)) { dirs.push(file); return; }
 		let {episode = null, type, name = null} = Helper.isMatch(file);
 		if(/Sample/gi.test(file)) { other.push(file); return; }
-		type && /\.mkv|\.mp4|\.srt|\.avi/gi.test(file) ? video.push({file, type, episode, name}) : other.push(file);
+		if(type && /\.mkv|\.mp4|\.srt|\.avi/gi.test(file)) video.push({file, type, episode, name});
+		other.push(file);
 	});
 	return {dirs: dirs.sort((a, b) => b.length - a.length), video, other};
 }
