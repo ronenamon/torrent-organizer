@@ -13,15 +13,16 @@ module.exports = function () {
 		return arr;
 	};
 
-	/* file => get Season and episode pattern */
-	function getSeasonAndEpisode(files) {
+	/* file => get Season and episode pattern and if movies, get it's name */
+	this.isMatch = files => {
 		let keys = Object.keys(patts);
 		for(let i = 0; i < keys.length; i+=1) {
-			let objFunc = patts[keys[i]];
-			if(!objFunc(files)) continue;
-			return objFunc(files);
+			let objFunc = patts[keys[i]](files);
+			if(!objFunc) continue;
+			return objFunc;
 		}
-	}
+		return {response: false};
+	};
 
 	/*
 		Helps getShows to figure out if this show is already found but this file is of different season.
@@ -61,11 +62,19 @@ module.exports = function () {
 		}).catch(e => console.log(e));
 	};
 
-	/* Outputs season, Show name and episode number */
-	this.getFileStats = file => {
+	this.getEpisodeTitle = ({name, season, episode}, showsData) => {
+		let title;
+		showsData.forEach(show => {
+			if(name !== show.Title && show.Season === season) return;
+			episode < 10 ? episode = parseInt(episode) : episode;
+			show.Episodes.forEach(({Episode, Title}) => episode == Episode ? title = Title : "");
+		});
+		return title ? title.replace(/[^\w\s-\.]/gi, "") : null; //Repalce is for weird titles like - Horseback Riding\Man Zone
+	};
+
+	/* Outputs season, Show name and episode number*/
+	this.getFileStats = ({file, episode}) => {
 		file = file.slice(file.lastIndexOf("/") + 1, file.length).replace(/[.]/g, " "); // "path/New Girl HDTV.LOL S02E01.mp4" -> "/New Girl HDTV LOL S02E01 mp4"
-		let {response, episode} = getSeasonAndEpisode(file);
-		if(!response) return false;
 		let indexE = episode.indexOf("E");
 		return {
 			season: parseInt(episode.slice(1, indexE)), // S02E01 -> 02
@@ -80,7 +89,7 @@ module.exports = function () {
 		let randomString = [];
 		for(let i = 0; i < 6; i+=1) {
 			let ran = letters[Math.floor(Math.random() * letters.length)];
-			if(Math.random() < 0.699) ran = ran.toLowerCase(); //So that it gives equal change to Upper case and lower case alphabets
+			if(Math.random() < 0.699) ran = ran.toLowerCase(); //So that it gives equal change to Upper case and lower case alphabets maybe (I'll check it later)
 			randomString.push(ran);
 		}
 		return randomString.join("");
