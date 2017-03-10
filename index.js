@@ -32,7 +32,7 @@ const GetFiles = new GetFilesFuncs();
 		let newNames = findNewNamesForFiles({video, showsData, moviesData});
 		console.log("Renaming files");
 		newNames.map(({oldFile, newFile}) => fs.renameSync(oldFile, basePath + newFile));
-		other.map(file => whatToDoWithFile(file, basePath));
+		other.map(file => whatToDoWithFile(file, basePath)); //It will deal with all the srt, false positives in movies, and tv shows and other files
 		console.log("Deleting uneccesary files");
 		removeDirs(dirs);
 		console.log("Your organized files are in - " + basePath);
@@ -53,6 +53,7 @@ function findNewNamesForFiles({video, showsData, moviesData}) {
 function findNewNameForShow(fileData, showsData) {
 	let newFile = {oldFile: fileData.file};
 	let ext = fileData.file.slice(fileData.file.length - 4, fileData.file.length);
+	if(ext === ".srt") Subs.fixSubs(fileData.file);
 	let showStats = Helper.getFileStats({file: fileData.file, episode: fileData.episode});
 	let title = Helper.getEpisodeTitle(showStats, showsData);
 	let {name, season, episode} = showStats;
@@ -65,6 +66,7 @@ function findNewNameForShow(fileData, showsData) {
 function findNewNameForMovie({file, name}, moviesData) {
 	let newFile = {oldFile: file};
 	file = file.slice(file.lastIndexOf("/") + 1, file.length);
+	if(ext === ".srt") Subs.fixSubs(file);
 	let ext = file.slice(file.length - 4, file.length);
 	moviesData.map(item => {
 		if(name !== item.Title) return;
@@ -78,7 +80,6 @@ function findNewNameForMovie({file, name}, moviesData) {
 function whatToDoWithFile(file, basePath) {
 	let fileName = file.slice(file.lastIndexOf("/") + 1, file.length);
 	let ext = file.slice(file.length - 4, file.length);
-	if(ext === ".srt") Subs.fixSubs(file);
 	/\.mkv|\.mp4|\.srt|\.avi/g.test(ext) ? fs.rename(file, `${basePath}/No Match Found/${fileName}`, () => "") : fs.unlinkSync(file);
 }
 

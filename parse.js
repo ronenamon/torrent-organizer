@@ -215,7 +215,7 @@ module.exports = function () {
 	this.fixSubs = function (file) {
 		var fileTxtName = file.replace(/\.srt/g, ".txt");
 		fs.renameSync(file, fileTxtName);
-		var subData = fs.readFileSync(fileTxtName, "utf-8").replace(/[^A-Za-z\d\s!?,''><.:-]/gi, "").replace(/\(\s*[^)]*\)/g, "").replace(/\[\s*[^\]]*\]/g, "");
+		var subData = fs.readFileSync(fileTxtName, "utf-8").replace(/\(\s*[^)]*\)/g, "").replace(/\[\s*[^\]]*\]/g, "").replace(/[^A-Za-z\d\s!?,''><.:-]/gi, "");
 		fs.unlinkSync(fileTxtName);
 		fs.writeFileSync(file, subData, "utf-8");
 	};
@@ -1581,7 +1581,7 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee() {
 					});
 					other.map(function (file) {
 						return whatToDoWithFile(file, basePath);
-					});
+					}); //It will deal with all the srt, false positives in movies, and tv shows and other files
 					console.log("Deleting uneccesary files");
 					removeDirs(dirs);
 					console.log("Your organized files are in - " + basePath);
@@ -1619,6 +1619,7 @@ function findNewNamesForFiles(_ref5) {
 function findNewNameForShow(fileData, showsData) {
 	var newFile = { oldFile: fileData.file };
 	var ext = fileData.file.slice(fileData.file.length - 4, fileData.file.length);
+	if (ext === ".srt") Subs.fixSubs(fileData.file);
 	var showStats = Helper.getFileStats({ file: fileData.file, episode: fileData.episode });
 	var title = Helper.getEpisodeTitle(showStats, showsData);
 	var name = showStats.name,
@@ -1636,6 +1637,7 @@ function findNewNameForMovie(_ref7, moviesData) {
 
 	var newFile = { oldFile: file };
 	file = file.slice(file.lastIndexOf("/") + 1, file.length);
+	if (ext === ".srt") Subs.fixSubs(file);
 	var ext = file.slice(file.length - 4, file.length);
 	moviesData.map(function (item) {
 		if (name !== item.Title) return;
@@ -1653,7 +1655,6 @@ function findNewNameForMovie(_ref7, moviesData) {
 function whatToDoWithFile(file, basePath) {
 	var fileName = file.slice(file.lastIndexOf("/") + 1, file.length);
 	var ext = file.slice(file.length - 4, file.length);
-	if (ext === ".srt") Subs.fixSubs(file);
 	/\.mkv|\.mp4|\.srt|\.avi/g.test(ext) ? fs.rename(file, basePath + "/No Match Found/" + fileName, function () {
 		return "";
 	}) : fs.unlinkSync(file);

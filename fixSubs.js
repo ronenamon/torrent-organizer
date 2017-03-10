@@ -9,9 +9,9 @@ module.exports = function () {
 		let fileTxtName = file.replace(/\.srt/g, ".txt");
 		fs.renameSync(file, fileTxtName);
 		let subData = fs.readFileSync(fileTxtName, "utf-8")
-			.replace(/[^A-Za-z\d\s!?,''><.:-]/gi, "")
 			.replace(/\(\s*[^)]*\)/g, "")
-			.replace(/\[\s*[^\]]*\]/g, "");
+			.replace(/\[\s*[^\]]*\]/g, "")
+			.replace(/[^A-Za-z\d\s!?,''><.:-]/gi, "");
 		fs.unlinkSync(fileTxtName);
 		fs.writeFileSync(file, subData, "utf-8");
 	};
