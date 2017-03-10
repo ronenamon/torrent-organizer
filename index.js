@@ -1,7 +1,5 @@
 "use strict";
 
-///basePath = basePath + "/"; //Adding "/" instead of "\" because I can use find the first one in an array and second is a escape char (Decrepted, I guess)
-//basePath = basePath.replace(/\\/g, "/"); //Oct 29 2016, Changed this
 const fs = require("fs");
 const HelperFuncs = require("./helper");
 const SubsFuncs = require("./fixSubs");
@@ -39,10 +37,7 @@ const GetFiles = new GetFilesFuncs();
 		removeDirs(dirs);
 		console.log("Your organized files are in - " + basePath);
 		console.timeEnd("It took");
-	} catch(e) {
-		console.log("Organize error");
-		console.log(new Error(e));
-	}
+	} catch(e) { console.log("Organize " + new Error(e)); }
 })();
 
 
@@ -96,10 +91,7 @@ function apiShowsAndMovies(shows, movies) {
 			let moviesData = await apiMovies(movies);
 			resolve([showsData, posters, moviesData]);
 		});
-	} catch(e) {
-		console.log("Execute API error");
-		console.log(new Error(e));
-	}
+	} catch(e) { console.log("Execute API " + new Error(e)); }
 }
 
 /* Gets movies Data form api */
@@ -114,7 +106,7 @@ async function apiMovies(movies) {
 			}
 			resolve(apiData.filter(({Response}) => Response === "True"));
 		});
-	} catch(e) { console.log("apiMovies Error"); console.log(new Error(e)); }
+	} catch(e) { console.log("apiMovies "); console.log(new Error(e)); }
 
 }
 
@@ -133,7 +125,7 @@ async function apiShows(shows) {
 			}
 			resolve([apiData.filter(({Response}) => Response === "True"), posters.filter(({url, title}) => url && title)]);
 		});
-	} catch(e) { console.log("apiMovies Error"); console.log(new Error(e)); }
+	} catch(e) { console.log("apiMovies "); console.log(new Error(e)); }
 }
 
 /* Gets show names with their respective season numbers */
@@ -168,10 +160,7 @@ function makeShowAndMoviesFolders({basePath, shows, posters, movies}) {
 			await Promise.all([makeShowsFolders({shows, basePath, posters}), makeMoviesFolders(movies, basePath)]);
 			resolve();
 		});
-	} catch(e) {
-		console.log("Make Show Folders Error");
-		console.log(new Error(e));
-	}
+	} catch(e) { console.log("Make Show Folders " + new Error(e)); }
 }
 
 /* Makes folder for the shows with; Season and showName */
@@ -186,7 +175,7 @@ function makeShowsFolders({shows, posters, basePath}) {
 			}
 			resolve();
 		});
-	} catch(e) { console.log("makeShowsFolders error"); console.log(new Error(e)); }
+	} catch(e) { console.log("makeShowsFolders "); console.log(new Error(e)); }
 }
 
 /* Makes folder for the movies with name, year, rating and runtime */
@@ -204,7 +193,7 @@ function makeMoviesFolders(movies, basePath) {
 			}
 			resolve();
 		});
-	} catch(e) { console.log("makeMoviesFolders error"); console.log(new Error(e)); }
+	} catch(e) { console.log("makeMoviesFolders " + new Error(e)); }
 }
 
 /* Downloads and save posters */
@@ -215,7 +204,7 @@ async function savePosters({basePath, posters, showName}) {
 			title === showName.replace(/\s/gi, "").toLowerCase() ?
 				await Helper.saveImage(url, `${basePath}/Tv Shows/${showName}/${showName}.jpg`) : "";
 		}
-	} catch(e) { console.log(e); }
+	} catch(e) { console.log("savePosters " + new Error(e)); }
 }
 
 /*

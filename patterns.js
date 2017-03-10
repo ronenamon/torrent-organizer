@@ -3,7 +3,7 @@
 module.exports = {
 	seasonPatt(file) { //For instance -> S02E05
 		file = file.slice(file.lastIndexOf("/") + 1, file.length).replace(/[.]/g, " ");
-		let episode = /(S|s)\d+(E|e)+\d\d/g.exec(file);
+		let episode = /S\d+E\d+/gi.exec(file);
 		if(!episode) return false;
 		episode = episode[0].toUpperCase();
 		return {episode, type: "tv"};

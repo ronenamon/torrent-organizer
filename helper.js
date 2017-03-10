@@ -59,7 +59,7 @@ module.exports = function () {
 				res.on("data", chunk => output += chunk);
 				res.on("end", () => resolve(JSON.parse(output)) );
 			}).end();
-		}).catch(e => console.log(e));
+		}).catch(e => console.log("getData " + new Error(e)));
 	};
 
 	this.getEpisodeTitle = ({name, season, episode}, showsData) => {

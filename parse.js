@@ -151,7 +151,7 @@ module.exports = function () {
 				});
 			}).end();
 		}).catch(function (e) {
-			return console.log(e);
+			return console.log("getData " + new Error(e));
 		});
 	};
 
@@ -283,7 +283,7 @@ module.exports = {
 	seasonPatt: function seasonPatt(file) {
 		//For instance -> S02E05
 		file = file.slice(file.lastIndexOf("/") + 1, file.length).replace(/[.]/g, " ");
-		var episode = /(S|s)\d+(E|e)+\d\d/g.exec(file);
+		var episode = /S\d+E\d+/gi.exec(file);
 		if (!episode) return false;
 		episode = episode[0].toUpperCase();
 		return { episode: episode, type: "tv" };
@@ -1086,9 +1086,6 @@ module.exports = require("https");
 "use strict";
 
 
-///basePath = basePath + "/"; //Adding "/" instead of "\" because I can use find the first one in an array and second is a escape char (Decrepted, I guess)
-//basePath = basePath.replace(/\\/g, "/"); //Oct 29 2016, Changed this
-
 var _regenerator = __webpack_require__(4);
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
@@ -1204,7 +1201,7 @@ var apiMovies = function () {
 					case 4:
 						_context4.prev = 4;
 						_context4.t0 = _context4["catch"](0);
-						console.log("apiMovies Error");console.log(new Error(_context4.t0));
+						console.log("apiMovies ");console.log(new Error(_context4.t0));
 					case 8:
 					case "end":
 						return _context4.stop();
@@ -1390,7 +1387,7 @@ var apiShows = function () {
 					case 4:
 						_context6.prev = 4;
 						_context6.t0 = _context6["catch"](0);
-						console.log("apiMovies Error");console.log(new Error(_context6.t0));
+						console.log("apiMovies ");console.log(new Error(_context6.t0));
 					case 8:
 					case "end":
 						return _context6.stop();
@@ -1499,7 +1496,7 @@ var savePosters = function () {
 					case 35:
 						_context12.prev = 35;
 						_context12.t1 = _context12["catch"](0);
-						console.log(_context12.t1);
+						console.log("savePosters " + new Error(_context12.t1));
 					case 38:
 					case "end":
 						return _context12.stop();
@@ -1589,17 +1586,14 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee() {
 					removeDirs(dirs);
 					console.log("Your organized files are in - " + basePath);
 					console.timeEnd("It took");
-					_context.next = 39;
+					_context.next = 38;
 					break;
 
 				case 35:
 					_context.prev = 35;
 					_context.t0 = _context["catch"](0);
-
-					console.log("Organize error");
-					console.log(new Error(_context.t0));
-
-				case 39:
+					console.log("Organize " + new Error(_context.t0));
+				case 38:
 				case "end":
 					return _context.stop();
 			}
@@ -1707,8 +1701,7 @@ function apiShowsAndMovies(shows, movies) {
 			};
 		}());
 	} catch (e) {
-		console.log("Execute API error");
-		console.log(new Error(e));
+		console.log("Execute API " + new Error(e));
 	}
 }function filterShowsAndMovies(video) {
 	var shows = {},
@@ -1785,8 +1778,7 @@ function makeShowAndMoviesFolders(_ref21) {
 			};
 		}());
 	} catch (e) {
-		console.log("Make Show Folders Error");
-		console.log(new Error(e));
+		console.log("Make Show Folders " + new Error(e));
 	}
 }
 
@@ -1901,7 +1893,7 @@ function makeShowsFolders(_ref23) {
 			};
 		}());
 	} catch (e) {
-		console.log("makeShowsFolders error");console.log(new Error(e));
+		console.log("makeShowsFolders ");console.log(new Error(e));
 	}
 }
 
@@ -2020,7 +2012,7 @@ function makeMoviesFolders(movies, basePath) {
 			};
 		}());
 	} catch (e) {
-		console.log("makeMoviesFolders error");console.log(new Error(e));
+		console.log("makeMoviesFolders " + new Error(e));
 	}
 }function filterFiles(files) {
 	var dirs = [],
