@@ -19,4 +19,4 @@ This script makes it look like this
 - Install node
 - clone this repository
 - cd into torrent-organizer and `npm install`
-- Use `node ./parse.js path`, path is the folder where your tv shows and movies are.
+- Use `node ./parse.js path`, path is the folder where your tv shows and movies are. Make sure your path is in double quotes.
