@@ -170,7 +170,7 @@ module.exports = function () {
 				return episode == Episode ? title = Title : "";
 			});
 		});
-		return title ? title.replace(/[^\w\s-\.]/gi, "") : null; //Repalce is for weird titles like - Horseback Riding\Man Zone
+		return title ? title.replace(/[^\w\s-\.$]/gi, "") : null; //Repalce is for weird titles like - Horseback Riding\Man Zone
 	};
 
 	/* Outputs season, Show name and episode number*/
@@ -1540,37 +1540,43 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee() {
 			switch (_context.prev = _context.next) {
 				case 0:
 					_context.prev = 0;
-					basePath = "H:/New folder".replace(/\\/g, "/");
 
-					if (basePath) {
-						_context.next = 4;
-						break;
-					}
+					if (!process.argv[2]) console.log("Invalid Path");
+					basePath = process.argv[2].replace(/\\/g, "/");
 
-					return _context.abrupt("return");
-
-				case 4:
 					if (basePath[basePath.length - 1] !== "/") basePath += "/";
+					console.time("It took");
+					console.log("Organizing " + basePath);
+					console.log("Reading Files");
 					files = GetFiles.readFiles(basePath);
+
+					console.log("Filtering Files into video, directories and other files");
 					_filterFiles = filterFiles(files), dirs = _filterFiles.dirs, video = _filterFiles.video, other = _filterFiles.other;
+
+					console.log("Filtering movies and tv shows files");
 					_filterShowsAndMovies = filterShowsAndMovies(video), _filterShowsAndMovies2 = _slicedToArray(_filterShowsAndMovies, 2), shows = _filterShowsAndMovies2[0], movies = _filterShowsAndMovies2[1];
-					_context.next = 10;
+
+					console.log("Getting shows and movies data from OmdbAPI.com");
+					_context.next = 15;
 					return apiShowsAndMovies(shows, movies);
 
-				case 10:
+				case 15:
 					_ref2 = _context.sent;
 					_ref3 = _slicedToArray(_ref2, 3);
 					showsData = _ref3[0];
 					posters = _ref3[1];
 					moviesData = _ref3[2];
 
+					console.log("Making new folders for movies and tv shows");
 					basePath += Helper.generateRandomFolderName();
-					_context.next = 18;
+					_context.next = 24;
 					return makeShowAndMoviesFolders({ basePath: basePath, shows: shows, posters: posters, "movies": moviesData });
 
-				case 18:
+				case 24:
+					console.log("Finding new names for movies and tv shows");
 					newNames = findNewNamesForFiles({ video: video, showsData: showsData, moviesData: moviesData });
 
+					console.log("Renaming files");
 					newNames.map(function (_ref4) {
 						var oldFile = _ref4.oldFile,
 						    newFile = _ref4.newFile;
@@ -1579,23 +1585,26 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee() {
 					other.map(function (file) {
 						return whatToDoWithFile(file, basePath);
 					});
+					console.log("Deleting uneccesary files");
 					removeDirs(dirs);
-					_context.next = 28;
+					console.log("Your organized files are in - " + basePath);
+					console.timeEnd("It took");
+					_context.next = 39;
 					break;
 
-				case 24:
-					_context.prev = 24;
+				case 35:
+					_context.prev = 35;
 					_context.t0 = _context["catch"](0);
 
 					console.log("Organize error");
 					console.log(new Error(_context.t0));
 
-				case 28:
+				case 39:
 				case "end":
 					return _context.stop();
 			}
 		}
-	}, _callee, this, [[0, 24]]);
+	}, _callee, this, [[0, 35]]);
 }))();
 
 function findNewNamesForFiles(_ref5) {
@@ -1651,7 +1660,9 @@ function whatToDoWithFile(file, basePath) {
 	var fileName = file.slice(file.lastIndexOf("/") + 1, file.length);
 	var ext = file.slice(file.length - 4, file.length);
 	if (ext === ".srt") Subs.fixSubs(file);
-	/\.mkv|\.mp4|\.srt|\.avi/g.test(ext) ? fs.renameSync(file, basePath + "/No Match Found/" + fileName) : fs.unlinkSync(file);
+	/\.mkv|\.mp4|\.srt|\.avi/g.test(ext) ? fs.rename(file, basePath + "/No Match Found/" + fileName, function () {
+		return "";
+	}) : fs.unlinkSync(file);
 }
 
 /* Gets shows data through OmdbAPI with their poster url's */
@@ -1759,10 +1770,9 @@ function makeShowAndMoviesFolders(_ref21) {
 								return Promise.all([makeShowsFolders({ shows: shows, basePath: basePath, posters: posters }), makeMoviesFolders(movies, basePath)]);
 
 							case 4:
-								console.log("Done!");
 								resolve();
 
-							case 6:
+							case 5:
 							case "end":
 								return _context7.stop();
 						}
@@ -2039,90 +2049,6 @@ function makeMoviesFolders(movies, basePath) {
 			return b.length - a.length;
 		}), video: video, other: other };
 }
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var fs = __webpack_require__(0);
-var HelperFuncs = __webpack_require__(1);
-
-var Helper = new HelperFuncs();
-
-module.exports = function () {
-
-	/*
- 	Renames file with their matched names ->
- 		if !match found -> renames with same name to "No match Found"
- 		if match found with a title -> renames it to it's respective season folder
- 		if match found without a title -> renames it to it's respective season folder without adding title
- */
-	this.renameFile = function (_ref) {
-		var basePath = _ref.basePath,
-		    randomFolder = _ref.randomFolder,
-		    file = _ref.file,
-		    apiData = _ref.apiData,
-		    ext = _ref.ext;
-
-		return new Promise(function (resolve) {
-			var fileName = file.slice(file.lastIndexOf("/"), file.length);
-
-			var _findCorrectNames = findCorrectNames(fileName, apiData),
-			    res = _findCorrectNames.res,
-			    name = _findCorrectNames.name,
-			    season = _findCorrectNames.season,
-			    episode = _findCorrectNames.episode,
-			    title = _findCorrectNames.title;
-
-			if (res === null) {
-				fs.renameSync(file, "" + basePath + randomFolder + "/No Match Found" + fileName);resolve();
-			} //Return null -> Just move it to new folder
-			basePath = "" + basePath + randomFolder + "/" + name + "/Season " + season;
-			var baseName = basePath + "/" + name + " S" + (season < 10 ? "0" + season : season) + "E" + episode; //For instance - Broad City S01E02
-			res ? fs.renameSync(file, baseName + " - " + title + ext) : fs.renameSync(file, "" + baseName + ext);
-			resolve();
-		}).catch(function (e) {
-			return console.log(e);
-		});
-	};
-
-	/*
- 	Gets all the files video and the others. Finds title for each of them, if found returns title, if not return name
- 	if name not found - returns null
- */
-	function findCorrectNames(file, apiData) {
-		var _Helper$getFileStats = Helper.getFileStats(file),
-		    name = _Helper$getFileStats.name,
-		    season = _Helper$getFileStats.season,
-		    episode = _Helper$getFileStats.episode;
-
-		if (!name) return { res: null };
-		var title = getEpisodeTitle({ name: name, season: season, episode: episode }, apiData);
-		return title ? { episode: episode, title: title, name: name, season: season, res: true } : { res: false, name: name, season: season, episode: episode };
-	}
-
-	/*Finds title by matching Episode number with apiData's Episode Number */
-	function getEpisodeTitle(_ref2, apiData) {
-		var name = _ref2.name,
-		    season = _ref2.season,
-		    episode = _ref2.episode;
-
-		var title = void 0;
-		apiData.forEach(function (currShow) {
-			if (name !== currShow.Title) return;
-			episode < 10 ? episode = parseInt(episode) : episode;
-			currShow.Episodes.forEach(function (_ref3) {
-				var Episode = _ref3.Episode,
-				    Title = _ref3.Title;
-				return episode == Episode ? title = Title : "";
-			});
-		});
-		return title ? title.replace(/[^\w\s-\.]/gi, "") : null; //Repalce is for weird titles like - Horseback Riding\Man Zone
-	}
-};
 
 /***/ })
 /******/ ]);

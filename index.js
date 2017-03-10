@@ -14,19 +14,31 @@ const GetFiles = new GetFilesFuncs();
 /* Start of the Function */
 (async function () {
 	try {
-		let basePath = "H:/New folder".replace(/\\/g, "/");
-		if(!basePath) return;
+		if(!process.argv[2]) console.log("Invalid Path");
+		let basePath = process.argv[2].replace(/\\/g, "/");
 		if(basePath[basePath.length - 1] !== "/") basePath += "/";
+		console.time("It took");
+		console.log(`Organizing ${basePath}`);
+		console.log("Reading Files");
 		let files = GetFiles.readFiles(basePath);
+		console.log("Filtering Files into video, directories and other files");
 		let {dirs, video, other} = filterFiles(files);
+		console.log("Filtering movies and tv shows files");
 		let [shows, movies] = filterShowsAndMovies(video);
+		console.log("Getting shows and movies data from OmdbAPI.com");
 		let [showsData, posters, moviesData] = await apiShowsAndMovies(shows, movies);
+		console.log("Making new folders for movies and tv shows");
 		basePath += Helper.generateRandomFolderName();
 		await makeShowAndMoviesFolders({basePath, shows, posters, "movies": moviesData});
+		console.log("Finding new names for movies and tv shows");
 		let newNames = findNewNamesForFiles({video, showsData, moviesData});
+		console.log("Renaming files");
 		newNames.map(({oldFile, newFile}) => fs.renameSync(oldFile, basePath + newFile));
 		other.map(file => whatToDoWithFile(file, basePath));
+		console.log("Deleting uneccesary files");
 		removeDirs(dirs);
+		console.log("Your organized files are in - " + basePath);
+		console.timeEnd("It took");
 	} catch(e) {
 		console.log("Organize error");
 		console.log(new Error(e));
@@ -72,7 +84,7 @@ function whatToDoWithFile(file, basePath) {
 	let fileName = file.slice(file.lastIndexOf("/") + 1, file.length);
 	let ext = file.slice(file.length - 4, file.length);
 	if(ext === ".srt") Subs.fixSubs(file);
-	/\.mkv|\.mp4|\.srt|\.avi/g.test(ext) ? fs.renameSync(file, `${basePath}/No Match Found/${fileName}`) : fs.unlinkSync(file);
+	/\.mkv|\.mp4|\.srt|\.avi/g.test(ext) ? fs.rename(file, `${basePath}/No Match Found/${fileName}`, () => "") : fs.unlinkSync(file);
 }
 
 
@@ -154,7 +166,6 @@ function makeShowAndMoviesFolders({basePath, shows, posters, movies}) {
 			fs.mkdirSync(basePath);
 			["Tv Shows", "Movies", "No Match Found"].map(str => fs.mkdirSync(`${basePath}/${str}`)); //Initial Folders
 			await Promise.all([makeShowsFolders({shows, basePath, posters}), makeMoviesFolders(movies, basePath)]);
-			console.log("Done!");
 			resolve();
 		});
 	} catch(e) {

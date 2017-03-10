@@ -69,7 +69,7 @@ module.exports = function () {
 			episode < 10 ? episode = parseInt(episode) : episode;
 			show.Episodes.forEach(({Episode, Title}) => episode == Episode ? title = Title : "");
 		});
-		return title ? title.replace(/[^\w\s-\.]/gi, "") : null; //Repalce is for weird titles like - Horseback Riding\Man Zone
+		return title ? title.replace(/[^\w\s-\.$]/gi, "") : null; //Repalce is for weird titles like - Horseback Riding\Man Zone
 	};
 
 	/* Outputs season, Show name and episode number*/
