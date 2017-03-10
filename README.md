@@ -13,9 +13,9 @@ This script makes it look like this
 (./images/tv.PNG)
 ###Movies
 ![Movies]
-(./images/movies.PNG)
+(./images/movie.PNG)
 
-**Note** - It will delete all the files that is not a `.mp4, .avi, .mkv, .avi and .srt`. This is to make sure that the script deletes all the unnecessary .txt, .nfo, folders remaining after the rename and sample video files. Just use this script on a folder which only contains movies and tv shows.
+**Note** - It will delete all the files that are not `.mp4, .avi, .mkv, .avi and .srt`. This is to make sure that the script deletes all the unnecessary `.txt`, `.nfo`, folders remaining after the rename and sample video files. Best to use this script on a folder which only contains movies and tv shows.
 
 ##How to use
 - Install node
