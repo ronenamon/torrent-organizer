@@ -14,3 +14,9 @@ This script makes it look like this
 ###Movies
 ![Movies]
 (./images/movies.PNG)
+
+##How to use
+- Install node
+- clone this repository
+- cd into torrent-organizer and `npm install`
+- Use `node ./parse.js path`, path is the folder where your tv shows and movies are.
