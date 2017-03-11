@@ -57,6 +57,7 @@ function findNewNameForShow(fileData, showsData) {
 	let showStats = Helper.getFileStats({file: fileData.file, episode: fileData.episode});
 	let title = Helper.getEpisodeTitle(showStats, showsData);
 	let {name, season, episode} = showStats;
+	if(!name) return newFile; //False positive
 	let baseName = `/Tv Shows/${name}/Season ${season}/${name} S${season < 10 ? "0" + season : season}E${episode}`;
 	title ? newFile["newFile"] = `${baseName} - ${title}${ext}` :
 		newFile["newFile"] = baseName + ext;

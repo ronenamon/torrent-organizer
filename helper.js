@@ -65,7 +65,7 @@ module.exports = function () {
 	this.getEpisodeTitle = ({name, season, episode}, showsData) => {
 		let title;
 		showsData.forEach(show => {
-			if(name !== show.Title && show.Season === season) return;
+			if(name !== show.Title || show.Season != season) return;
 			episode < 10 ? episode = parseInt(episode) : episode;
 			show.Episodes.forEach(({Episode, Title}) => episode == Episode ? title = Title : "");
 		});

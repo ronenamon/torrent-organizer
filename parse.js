@@ -162,7 +162,7 @@ module.exports = function () {
 
 		var title = void 0;
 		showsData.forEach(function (show) {
-			if (name !== show.Title && show.Season === season) return;
+			if (name !== show.Title || show.Season != season) return;
 			episode < 10 ? episode = parseInt(episode) : episode;
 			show.Episodes.forEach(function (_ref2) {
 				var Episode = _ref2.Episode,
@@ -1626,6 +1626,7 @@ function findNewNameForShow(fileData, showsData) {
 	    season = showStats.season,
 	    episode = showStats.episode;
 
+	if (!name) return newFile; //False positive
 	var baseName = "/Tv Shows/" + name + "/Season " + season + "/" + name + " S" + (season < 10 ? "0" + season : season) + "E" + episode;
 	title ? newFile["newFile"] = baseName + " - " + title + ext : newFile["newFile"] = baseName + ext;
 	return newFile;
