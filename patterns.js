@@ -5,8 +5,7 @@ module.exports = {
 		file = file.slice(file.lastIndexOf("/") + 1, file.length).replace(/[.]/g, " ");
 		let episode = /S\d+E\d+/gi.exec(file);
 		if(!episode) return false;
-		episode = episode[0].toUpperCase();
-		return {episode, type: "tv"};
+		return {episode: episode[0], type: "tv"};
 	},
 	seasonXEpiNamePatt(file) { // For instance -> 1x02
 		file = file.slice(file.lastIndexOf("/") + 1, file.length).replace(/[.]/g, " ");

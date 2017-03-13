@@ -26,12 +26,13 @@ module.exports = function () {
 
 	/*
 		Helps getShows to figure out if this show is already found but this file is of different season.
+		{name: props} is returned because the same show can have files with different names Mr robot and mr robot
 	*/
 	this.sameShow = (shows, title, season) => {
 		for(let prop in shows) {
 			if(!new RegExp(title + "$", "i").test(prop)) continue;
-			if(shows[prop].season.indexOf(season) === -1) return {newSeason: true};
-			return {newSeason: null}; //If not same season but same shows
+			if(shows[prop].season.indexOf(season) === -1) return {newSeason: true, name: prop};
+			return {newSeason: null, name: prop}; //If not same season but same shows
 		}
 		return false;
 	};
@@ -62,23 +63,34 @@ module.exports = function () {
 		}).catch(e => console.log("getData " + new Error(e)));
 	};
 
-	this.getEpisodeTitle = ({name, season, episode}, showsData) => {
+	/* Matches the found title with the api title word by word -> mr robot -> mr, check with api title -> robot, check with api title */
+	function compareShowNameWithApi(name, apiName) {
+		if(!name) return false;
+		let nameSplit = name.split(" ");
+		let matches = 0;
+		nameSplit.forEach(item => new RegExp(item, "gi").test(apiName) ? matches += 1 : "");
+		return matches === nameSplit.length ? true : false;
+	}
+
+	this.getEpisodeTitleAndShowName = ({name, season, episode}, showsData) => {
 		let title;
 		showsData.forEach(show => {
-			if(name !== show.Title || show.Season != season) return;
+			let isName = compareShowNameWithApi(name, show.Title);
+			if(!isName || show.Season != season) return;
 			episode < 10 ? episode = parseInt(episode) : episode;
 			show.Episodes.forEach(({Episode, Title}) => episode == Episode ? title = Title : "");
 		});
-		return title ? title.replace(/[^\w\s-\.$]/gi, "") : null; //Repalce is for weird titles like - Horseback Riding\Man Zone
+		return title ? title.replace(/[^\w\s-\.$]/gi, "") : null; //Repalace is for weird titles like - Horseback Riding\Man Zone
 	};
 
 	/* Outputs season, Show name and episode number*/
 	this.getFileStats = ({file, episode}) => {
 		file = file.slice(file.lastIndexOf("/") + 1, file.length).replace(/[.]/g, " "); // "path/New Girl HDTV.LOL S02E01.mp4" -> "/New Girl HDTV LOL S02E01 mp4"
-		let indexE = episode.indexOf("E");
+		let indexE = /e/gi.exec(episode)["index"];
 		return {
 			season: parseInt(episode.slice(1, indexE)), // S02E01 -> 02
-			name: file.indexOf(episode) === 0 ? null : file.slice(0, file.indexOf(episode) - 1), // "/Shameless S02E02" -> "Shameless"
+			name: file.indexOf(episode) !== 0 ? file.slice(0, file.indexOf(episode) - 1).replace(/\(\s*[^)]*\)/g, "")
+				.replace(/\[\s*[^\]]*\]/g, "").replace(/\/\\/g, "").trim() : null, // "/Shameless S02E02" -> "Shameless" or "[something] Fargo -> Fargo"
 			episode: episode.slice(indexE + 1, episode.length) //S01E02 -> 02
 		};
 	};

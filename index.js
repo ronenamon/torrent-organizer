@@ -32,7 +32,7 @@ const GetFiles = new GetFilesFuncs();
 		let newNames = findNewNamesForFiles({video, showsData, moviesData});
 		console.log("Renaming files");
 		newNames.map(({oldFile, newFile}) => fs.renameSync(oldFile, basePath + newFile));
-		other.map(file => whatToDoWithFile(file, basePath)); //It will deal with all the srt, false positives in movies, and tv shows and other files
+		await Promise.all(other.map(async file => await whatToDoWithFile(file, basePath))); //It will deal with all the srt, false positives in movies, and tv shows and other files
 		console.log("Deleting uneccesary files");
 		removeDirs(dirs);
 		console.log("Your organized files are in - " + basePath);
@@ -55,7 +55,7 @@ function findNewNameForShow(fileData, showsData) {
 	let ext = fileData.file.slice(fileData.file.length - 4, fileData.file.length);
 	if(ext === ".srt") Subs.fixSubs(fileData.file);
 	let showStats = Helper.getFileStats({file: fileData.file, episode: fileData.episode});
-	let title = Helper.getEpisodeTitle(showStats, showsData);
+	let title = Helper.getEpisodeTitleAndShowName(showStats, showsData); //Need a universal method that converts file name from show names instead of this
 	let {name, season, episode} = showStats;
 	if(!name) return newFile; //False positive
 	let baseName = `/Tv Shows/${name}/Season ${season}/${name} S${season < 10 ? "0" + season : season}E${episode}`;
@@ -77,11 +77,12 @@ function findNewNameForMovie({file, name}, moviesData) {
 	return newFile;
 }
 
-/* Renames video and sub files, removes hearing aid from subs and delete files other than video files */
-function whatToDoWithFile(file, basePath) {
+/* Moves false positives of shows and movies and deletes uneccesary files */
+async function whatToDoWithFile(file, basePath) {
 	let fileName = file.slice(file.lastIndexOf("/") + 1, file.length);
 	let ext = file.slice(file.length - 4, file.length);
-	/\.mkv|\.mp4|\.srt|\.avi/g.test(ext) ? fs.rename(file, `${basePath}/No Match Found/${fileName}`, () => "") : fs.unlinkSync(file);
+	if(!/\.mkv|\.mp4|\.srt|\.avi/g.test(ext)) { fs.unlinkSync(file); return; }
+	return new Promise(resolve => fs.rename(file, `${basePath}/No Match Found/${fileName}`, () => resolve()));
 }
 
 
@@ -134,6 +135,7 @@ async function apiShows(shows) {
 function filterShowsAndMovies(video) {
 	let [shows, movies] = [{}, []];
 	video.map(({file, type, episode, name}) => {
+		if(name) name = name.replace(/\(\s*[^)]*\)/g, "").replace(/\[\s*[^\]]*\]/g, "").replace(/\/\\/g, "").trim(); //Removes brackets and extra whitespace
 		if(type === "movie") return movies.length ? movies.indexOf(name) === -1 ? movies.push(name) : "" : movies.push(name);
 		{
 			let {name, season} = Helper.getFileStats({file, episode, type});
@@ -141,8 +143,8 @@ function filterShowsAndMovies(video) {
 			let sameShow = Helper.sameShow(shows, name, season);
 			if(!sameShow) { shows[name] = {season: [season], length: 1}; return; } //New show detected
 			if(!sameShow.newSeason) return; //Same show detected
-			shows[name].season.push(season); //Same show but different season
-			shows[name].length += 1;
+			shows[sameShow.name].season.push(season); //Same show but different season
+			shows[sameShow.name].length += 1;
 		}
 	});
 	return [shows, movies];
@@ -221,5 +223,5 @@ function filterFiles(files) {
 		if(type && /\.mkv|\.mp4|\.srt|\.avi/gi.test(file)) video.push({file, type, episode, name});
 		other.push(file);
 	});
-	return {dirs: dirs.sort((a, b) => b.length - a.length), video, other};
+	return {dirs: dirs.sort((a, b) => b.length - a.length), video, other}; //Sorting dirs, so that it deletes from inside out
 }
