@@ -9,11 +9,9 @@ Your torrented files probably look like this
 This script makes it look like this
 
 ###Tv Shows
-![Tv Shows]
-(./images/tv.PNG)
+![Tv Shows](./images/tv.PNG)
 ###Movies
-![Movies]
-(./images/movie.PNG)
+![Movies](./images/movie.PNG)
 
 **Note** (only when the mode is `--no-link`) - It will delete all the files that are not `.mp4, .avi, .mkv, .avi and .srt`. This is to make sure that the script deletes all the unnecessary `.txt`, `.nfo`, folders remaining after the rename and sample video files. Best to use this script on a folder which only contains movies and tv shows.
 
