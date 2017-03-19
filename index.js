@@ -12,8 +12,8 @@ const GetFiles = new GetFilesFuncs();
 /* Start of the Function */
 (async function () {
 	try {
-		if(!process.argv[2]) console.log("Invalid Path");
-		let basePath = process.argv[2].replace(/\\/g, "/");
+		if(!process.argv[2] || !process.argv[3]) { console.log("invalid path or mode"); return; }
+		let [basePath, link] = [process.argv[2].replace(/\\/g, "/"), process.argv[3]];
 		if(basePath[basePath.length - 1] !== "/") basePath += "/";
 		console.time("It took");
 		console.log(`Organizing ${basePath}`);
@@ -30,11 +30,19 @@ const GetFiles = new GetFilesFuncs();
 		await makeShowAndMoviesFolders({basePath, shows, posters, "movies": moviesData});
 		console.log("Finding new names for movies and tv shows");
 		let newNames = findNewNamesForFiles({video, showsData, moviesData});
-		console.log("Renaming files");
-		newNames.map(({oldFile, newFile}) => fs.renameSync(oldFile, basePath + newFile));
-		await Promise.all(other.map(async file => await whatToDoWithFile(file, basePath))); //It will deal with all the srt, false positives in movies, and tv shows and other files
-		console.log("Deleting uneccesary files");
-		removeDirs(dirs);
+		if(link === "--symlink") {
+			console.log("Creating Symlinks");
+			newNames.map(({oldFile, newFile}) => fs.symlinkSync(oldFile, basePath + newFile));
+		} else if(link === "--hardlink") {
+			console.log("Creating Hardlinks");
+			newNames.map(({oldFile, newFile}) => fs.linkSync(oldFile, basePath + newFile));
+		} else {
+			console.log("Renaming Files");
+			newNames.map(({oldFile, newFile}) => fs.renameSync(oldFile, basePath + newFile));
+			await Promise.all(other.map(async file => await whatToDoWithFile(file, basePath))); //It will deal with all the srt, false positives in movies, and tv shows and other files
+			console.log("Deleting uneccesary files");
+			removeDirs(dirs);
+		}
 		console.log("Your organized files are in - " + basePath);
 		console.timeEnd("It took");
 	} catch(e) { console.log("Organize " + new Error(e)); }
