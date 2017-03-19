@@ -24,6 +24,6 @@ This script makes it look like this
 ### Options
 - `path` (required) - It is the folder where your tv shows and movies are. Make sure your path is in double quotes.
 - `--mode` (required) - There are three modes `--symlink`, `--hardlink`, `--no-link`
-  - `--symlink` - It creates shortcut of the files with formatted names instead of renaming the original files. Recommended to use on torrents that are being seeded.
-  - `--hardlink` - It creates new files with formatted names without taking extra space. If the original files are deleted, hard linked files will take the space. Basically duplicates of files without taking extra space. Recommended to use on torrents that being seeded.
+  - `--symlink` - To use this, **open cmd as administrator**. It creates shortcut of the files with formatted names instead of renaming the original files. Recommended to use on torrents that are being seeded.
+  - `--hardlink` - To use this, **open cmd as administrator**. It creates new files with formatted names without taking extra space. If the original files are deleted, hard linked files will take the space. Basically duplicates of files without taking extra space. Recommended to use on torrents that being seeded.
   - `--no-link` - This renames the files and deletes the unnecessary files. **This will stop seeding.**
