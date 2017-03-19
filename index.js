@@ -12,7 +12,7 @@ const GetFiles = new GetFilesFuncs();
 /* Start of the Function */
 (async function () {
 	try {
-		if(!process.argv[2]) console.log("Invalid Path");
+		if(!process.argv[2]) { console.log("Invalid Path"); return; }
 		let basePath = process.argv[2].replace(/\\/g, "/");
 		if(basePath[basePath.length - 1] !== "/") basePath += "/";
 		console.time("It took");

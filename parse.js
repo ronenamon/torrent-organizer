@@ -1593,7 +1593,14 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee2() {
 				case 0:
 					_context2.prev = 0;
 
-					if (!process.argv[2]) console.log("Invalid Path");
+					if (process.argv[2]) {
+						_context2.next = 4;
+						break;
+					}
+
+					console.log("Invalid Path");return _context2.abrupt("return");
+
+				case 4:
 					basePath = process.argv[2].replace(/\\/g, "/");
 
 					if (basePath[basePath.length - 1] !== "/") basePath += "/";
@@ -1609,10 +1616,10 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee2() {
 					_filterShowsAndMovies = filterShowsAndMovies(video), _filterShowsAndMovies2 = _slicedToArray(_filterShowsAndMovies, 2), shows = _filterShowsAndMovies2[0], movies = _filterShowsAndMovies2[1];
 
 					console.log("Getting shows and movies data from OmdbAPI.com");
-					_context2.next = 15;
+					_context2.next = 17;
 					return apiShowsAndMovies(shows, movies);
 
-				case 15:
+				case 17:
 					_ref2 = _context2.sent;
 					_ref3 = _slicedToArray(_ref2, 3);
 					showsData = _ref3[0];
@@ -1621,10 +1628,10 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee2() {
 
 					console.log("Making new folders for movies and tv shows");
 					basePath += Helper.generateRandomFolderName();
-					_context2.next = 24;
+					_context2.next = 26;
 					return makeShowAndMoviesFolders({ basePath: basePath, shows: shows, posters: posters, "movies": moviesData });
 
-				case 24:
+				case 26:
 					console.log("Finding new names for movies and tv shows");
 					newNames = findNewNamesForFiles({ video: video, showsData: showsData, moviesData: moviesData });
 
@@ -1634,7 +1641,7 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee2() {
 						    newFile = _ref4.newFile;
 						return fs.renameSync(oldFile, basePath + newFile);
 					});
-					_context2.next = 30;
+					_context2.next = 32;
 					return Promise.all(other.map(function () {
 						var _ref5 = _asyncToGenerator(_regenerator2.default.mark(function _callee(file) {
 							return _regenerator2.default.wrap(function _callee$(_context) {
@@ -1660,25 +1667,25 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee2() {
 						};
 					}()));
 
-				case 30:
+				case 32:
 					//It will deal with all the srt, false positives in movies, and tv shows and other files
 					console.log("Deleting uneccesary files");
 					removeDirs(dirs);
 					console.log("Your organized files are in - " + basePath);
 					console.timeEnd("It took");
-					_context2.next = 39;
+					_context2.next = 41;
 					break;
 
-				case 36:
-					_context2.prev = 36;
+				case 38:
+					_context2.prev = 38;
 					_context2.t0 = _context2["catch"](0);
 					console.log("Organize " + new Error(_context2.t0));
-				case 39:
+				case 41:
 				case "end":
 					return _context2.stop();
 			}
 		}
-	}, _callee2, this, [[0, 36]]);
+	}, _callee2, this, [[0, 38]]);
 }))();
 
 function findNewNamesForFiles(_ref6) {
