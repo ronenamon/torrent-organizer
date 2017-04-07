@@ -12,8 +12,6 @@ module.exports = {
 		let episode = /\d+x\d\d/gi.exec(file);
 		if(!episode) return false;
 		episode = episode[0];
-		episode.indexOf("x") === 1 ? episode += "S0" : episode += "S";   //1x10 -> S01x10 or 19x09 -> S19x09
-		episode = episode.replace(/x/gi, "E");
 		return {episode, type: "tv"};
 	},
 	ifMovie(file) {

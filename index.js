@@ -22,12 +22,13 @@ const GetFiles = new GetFilesFuncs();
 		console.log("Filtering Files into video, directories and other files");
 		let {dirs, video, other} = filterFiles(files);
 		console.log("Filtering movies and tv shows files");
-		let [shows, movies] = filterShowsAndMovies(video);
+		let filteredFiles = filterShowsAndMovies(video);
 		console.log("Getting shows and movies data from OmdbAPI.com");
-		let [showsData, posters, moviesData] = await apiShowsAndMovies(shows, movies);
+		let [showsData, posters, moviesData] = await apiShowsAndMovies(filteredFiles);
+		let shows = Helper.replaceNameWithApiName({filteredFiles, showsData});
 		console.log("Making new folders for movies and tv shows");
 		basePath += Helper.generateRandomFolderName();
-		await makeShowAndMoviesFolders({basePath, shows, posters, "movies": moviesData});
+		await makeShowAndMoviesFolders({basePath, shows, posters, movies: moviesData});
 		console.log("Finding new names for movies and tv shows");
 		let newNames = findNewNamesForFiles({video, showsData, moviesData});
 		if(link === "--symlink") {
@@ -36,12 +37,14 @@ const GetFiles = new GetFilesFuncs();
 		} else if(link === "--hardlink") {
 			console.log("Creating Hardlinks");
 			newNames.map(({oldFile, newFile}) => fs.linkSync(oldFile, basePath + newFile));
-		} else {
+		} else if(link === "--no-link") {
 			console.log("Renaming Files");
 			newNames.map(({oldFile, newFile}) => fs.renameSync(oldFile, basePath + newFile));
 			await Promise.all(other.map(async file => await whatToDoWithFile(file, basePath))); //It will deal with all the srt, false positives in movies, and tv shows and other files
 			console.log("Deleting uneccesary files");
 			removeDirs(dirs);
+		} else {
+			console.log("Invalid mode");
 		}
 		console.log("Your organized files are in - " + basePath);
 		console.timeEnd("It took");
@@ -58,15 +61,16 @@ function findNewNamesForFiles({video, showsData, moviesData}) {
 	return names.filter(({newFile}) => newFile); //No API Match but pattern match
 }
 
+//This function is doing work that has been already done before; Fixing this requires changing that will affect multiple function, will do it in the next pull request hopefully
 function findNewNameForShow(fileData, showsData) {
 	let newFile = {oldFile: fileData.file};
 	let ext = fileData.file.slice(fileData.file.length - 4, fileData.file.length);
 	if(ext === ".srt") Subs.fixSubs(fileData.file);
 	let showStats = Helper.getFileStats({file: fileData.file, episode: fileData.episode});
-	let title = Helper.getEpisodeTitleAndShowName(showStats, showsData); //Need a universal method that converts file name from show names instead of this
+	let {title, apiName} = Helper.getEpisodeTitleAndName(showStats, showsData);
 	let {name, season, episode} = showStats;
 	if(!name) return newFile; //False positive
-	let baseName = `/Tv Shows/${name}/Season ${season}/${name} S${season < 10 ? "0" + season : season}E${episode}`;
+	let baseName = `/Tv Shows/${apiName}/Season ${season}/${apiName} S${season < 10 ? "0" + season : season}E${episode}`;
 	title ? newFile["newFile"] = `${baseName} - ${title}${ext}` :
 		newFile["newFile"] = baseName + ext;
 	return newFile;
@@ -78,7 +82,7 @@ function findNewNameForMovie({file, name}, moviesData) {
 	if(ext === ".srt") Subs.fixSubs(file);
 	let ext = file.slice(file.length - 4, file.length);
 	moviesData.map(item => {
-		if(name !== item.Title) return;
+		if(name.toLowerCase() !== item.Title.toLowerCase()) return;
 		let {Title, Year, Runtime, Rating} = item;
 		newFile["newFile"] = `/Movies/${Title} ${Year} (${Runtime}) (${Rating})/${Title} ${Year}${ext}`;
 	});
@@ -95,7 +99,7 @@ async function whatToDoWithFile(file, basePath) {
 
 
 /* Gets shows data through OmdbAPI with their poster url's */
-function apiShowsAndMovies(shows, movies) {
+function apiShowsAndMovies([shows, movies]) {
 	try {
 		return new Promise(async resolve => {
 			let [showsData, posters] = await apiShows(shows);
