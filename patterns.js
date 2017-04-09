@@ -5,14 +5,14 @@ module.exports = {
 		file = file.slice(file.lastIndexOf("/") + 1, file.length).replace(/[.]/g, " ");
 		let episode = /S\d+E\d+/gi.exec(file);
 		if(!episode) return false;
-		return {episode: episode[0], type: "tv"};
+		return {episodePatt: episode[0], type: "tv"};
 	},
 	seasonXEpiNamePatt(file) { // For instance -> 1x02
 		file = file.slice(file.lastIndexOf("/") + 1, file.length).replace(/[.]/g, " ");
 		let episode = /\d+x\d\d/gi.exec(file);
 		if(!episode) return false;
 		episode = episode[0];
-		return {episode, type: "tv"};
+		return {episodePatt: episode, type: "tv"};
 	},
 	ifMovie(file) {
 		file = file.slice(file.lastIndexOf("/") + 1, file.length).replace(/[.]/g, " ");

@@ -24,6 +24,8 @@ module.exports = function () {
 		return {response: false};
 	};
 
+	this.getExt = file => file.slice(file.length - 4, file.length);
+
 	/*
 		Helps getShows to figure out if this show is already found but this file is of different season.
 		{name: props} is returned because the same show can have files with different names Mr robot and mr robot
@@ -64,18 +66,16 @@ module.exports = function () {
 		}).catch(e => console.log("getData " + new Error(e)));
 	};
 
-	function compareNameHelper(name, apiName) {
-		let nameSplit = name.split(" ");
-		let matches = 0;
-		nameSplit.forEach(item => new RegExp(item, "gi").test(apiName) ? matches += 1 : "");
-		return matches === nameSplit.length ? true : false;
-	}
-
 	/* Matches the found title with the api title word by word -> mr robot -> mr, check with api title -> robot, check with api title */
 	function compareNameWithApi(name, showsData) {
-		if(!name) return null;
 		let newName;
-		showsData.forEach(({Title}) => compareNameHelper(name, Title) ? newName = Title : "");
+		showsData.forEach(({Title}) => {
+			let nameSplit = name.split(" ");
+			let matches = 0;
+			nameSplit.forEach(item => new RegExp(item, "gi").test(Title) ? matches += 1 : "");
+			if(matches !== nameSplit.length) return;
+			newName = Title;
+		});
 		return newName;
 	}
 
@@ -85,45 +85,31 @@ module.exports = function () {
 		Object.keys(shows).forEach(name => {
 			let isName = compareNameWithApi(name, showsData);
 			isName ? newShows[isName] = shows[name] : newShows[name] = shows[name];
-			/*
-				? => If no name found with api, then just copy from shows object
-				: => add the key with new name and copy the value of the old object
-			*/
 		});
 		return newShows;
 	};
 
-	this.getEpisodeTitleAndName = ({name, season, episode}, showsData) => {
-		let [title, apiName] = ["", ""];
+	this.getEpisodeTitle = ({name, episodeNum, season, showsData}) => {
+		let title = "";
 		showsData.forEach(show => {
-			let isName = compareNameHelper(name, show.Title);
-			if(!isName || show.Season != season) return;
-			apiName = show.Title;
-			episode < 10 ? episode = parseInt(episode) : episode;
-			show.Episodes.forEach(({Episode, Title}) => episode == Episode ? title = Title : "");
+			if(name !== show.Title || show.Season != season) return;
+			show.Episodes.forEach(({Episode, Title}) => episodeNum == Episode ? title = Title : "");
 		});
-		return {title: title ? title.replace(/[^\w\s-\.$]/gi, "") : null, apiName}; //Repalace is for weird titles like - Horseback Riding\Man Zone
+		return title ? title.replace(/[^\w\s-\.$]/gi, "") : null; //Repalace is for weird titles like - Horseback Riding\Man Zone
 	};
 
 	/* Outputs season, Show name and episode number*/
-	this.getFileStats = ({file, episode}) => {
+	this.getFileStats = ({file, episodePatt}) => {
 		file = file.slice(file.lastIndexOf("/") + 1, file.length).replace(/[.]/g, " "); // "path/New Girl HDTV.LOL S02E01.mp4" -> "/New Girl HDTV LOL S02E01 mp4"
-		if(episode.indexOf("x") !== -1) {
-			let newEpisode = episode.slice(episode.indexOf("x") + 1, episode.length); //4x01 -> 01
-			return {
-				season: parseInt(episode.slice(0, episode.indexOf("x"))),
-				name: file.indexOf("x") !== 0 ? file.slice(0, file.indexOf("x") - 1).replace(/\(\s*[^)]*\)/g, "")
-					.replace(/\[\s*[^\]]*\]/g, "").replace(/\/\\/g, "").replace(/[^\w\s\.$]/gi, "").trim() : null,
-				episode: newEpisode
-			};
-		}
-		let indexE = /e/gi.exec(episode)["index"];
-		return {
-			season: parseInt(episode.slice(1, indexE)), // S02E01 -> 02
-			name: file.indexOf(episode) !== 0 ? file.slice(0, file.indexOf(episode) - 1).replace(/\(\s*[^)]*\)/g, "")
-				.replace(/\[\s*[^\]]*\]/g, "").replace(/\/\\/g, "").replace(/[^\w\s\.$]/gi, "").trim() : null, // "/Shameless S02E02" -> "Shameless" or "[something] Fargo -> Fargo"
-			episode: episode.slice(indexE + 1, episode.length) //S01E02 -> 02
-		};
+		let index = /e/gi.exec(episodePatt) ? {patt: /e/gi.exec(episodePatt)["index"], match: "e"} : {patt: /x/gi.exec(episodePatt)["index"] , match: "x"};
+		let season = index.match === "e" ? episodePatt.slice(1, index.patt) : episodePatt.slice(0, index.patt);
+		let name = file.slice(0, file.indexOf(episodePatt) - 1)
+			.replace(/\(\s*[^)]*\)/g, "")
+			.replace(/\[\s*[^\]]*\]/g, "")
+			.replace(/\/\\/g, "")
+			.replace(/[^\w\s\.$]/gi, "").trim();
+		let episodeNum = episodePatt.slice(index.patt + 1, episodePatt.length);
+		return {season: parseInt(season), name, episodeNum: parseInt(episodeNum)};
 	};
 
 	/* Generated random folder name to organize the shows */
