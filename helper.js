@@ -80,7 +80,7 @@ module.exports = function () {
 	}
 
 	//Replaces show and movie names found from files to the names that were found from api. This solves the bad names that were found from the files
-	this.replaceNameWithApiName = ({filteredFiles: [shows], showsData}) => {
+	this.replaceNameWithApiName = ({showsAndMovies: [shows], showsData}) => {
 		let newShows = {};
 		Object.keys(shows).forEach(name => {
 			let isName = compareNameWithApi(name, showsData);

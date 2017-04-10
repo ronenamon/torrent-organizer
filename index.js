@@ -22,10 +22,10 @@ const GetFiles = new GetFilesFuncs();
 		console.log("Filtering Files into video, directories and other files");
 		let {dirs, video, other} = filterFiles(files);
 		console.log("Filtering movies and tv shows files");
-		let filteredFiles = filterShowsAndMovies(video);
+		let showsAndMovies = filterShowsAndMovies(video);
 		console.log("Getting shows and movies data from OmdbAPI.com");
-		let [showsData, posters, moviesData] = await apiShowsAndMovies(filteredFiles);
-		let shows = Helper.replaceNameWithApiName({filteredFiles, showsData});
+		let [showsData, posters, moviesData] = await apiShowsAndMovies(showsAndMovies);
+		let shows = Helper.replaceNameWithApiName({showsAndMovies, showsData});
 		console.log("Making new folders for movies and tv shows");
 		basePath += Helper.generateRandomFolderName();
 		await makeShowAndMoviesFolders({basePath, shows, posters, movies: moviesData});
@@ -54,7 +54,7 @@ const GetFiles = new GetFilesFuncs();
 
 function findNewNamesForFiles({video, shows, showsData, moviesData}) {
 	let names = [];
-	video.map(file => file.type === "movie" ? names.push(findNewNameForMovie(file, moviesData, file.fileStats.ext)) : "");
+	video.map(file => file.type === "movie" ? names.push(findNewNameForMovie(file, moviesData)) : "");
 	Object.keys(shows).map(name => names = [...names, ...findNewNameForShow({name, files: shows[name].files, showsData})]);
 	return names.filter(({newFile}) => newFile); //No API Match but pattern match
 }
@@ -130,7 +130,7 @@ async function apiShows(shows) {
 			let [apiData, posters] = [[], []];
 			for(let showName of Object.keys(shows)) {
 				let {season} = shows[showName];
-				showName = showName.split(" ").join("%20"); //For api
+				showName = showName.replace(/[^\w\s]/gi, "").split(" ").join("%20"); //For api
 				let baseUrl = `/?t=${showName}`;
 				let {Poster} = await Helper.getData(baseUrl);
 				posters.push({title: showName, url: Poster});
@@ -148,11 +148,11 @@ function filterShowsAndMovies(video) {
 		if(name) name = name.replace(/\(\s*[^)]*\)/g, "").replace(/\[\s*[^\]]*\]/g, "").replace(/\/\\/g, "").trim(); //Removes brackets and extra whitespace
 		if(type === "movie") return movies.length ? movies.indexOf(name) === -1 ? movies.push(name) : "" : movies.push(name);
 		{
-			let {name, season, episodeNum, ext} = fileStats;
+			let {name, season, episodeNum} = fileStats;
 			if(!name) return;
 			let sameShow = Helper.sameShow(shows, name, season);
-			if(!sameShow) { shows[name] = {season: [season], length: 1, files: [{file, episodeNum, season, ext}]}; return; } //New show detected
-			if(shows[name] && shows[name].hasOwnProperty("files")) shows[name].files.push({file, episodeNum, season, ext});
+			if(!sameShow) { shows[name] = {season: [season], length: 1, files: [{file, episodeNum, season}]}; return; } //New show detected
+			if(shows[sameShow.name] && shows[sameShow.name].hasOwnProperty("files")) shows[sameShow.name].files.push({file, episodeNum, season});
 			if(!sameShow.newSeason) return; //Same show detected
 			shows[sameShow.name].season.push(season); //Same show but different season
 			shows[sameShow.name].length += 1;
@@ -163,7 +163,9 @@ function filterShowsAndMovies(video) {
 
 /* Removes empty dirs after the rename of the files */
 function removeDirs(files) {
-	files.map(file => fs.rmdirSync(file)); //This just does not throw any errors
+	try {
+		files.map(file => fs.rmdirSync(file));
+	} catch(e) { console.log("Remove Dirs Error: " + new Error(e)); }
 }
 
 /* Makes folder for shows and movies */

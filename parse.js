@@ -184,8 +184,8 @@ module.exports = function () {
 
 	//Replaces show and movie names found from files to the names that were found from api. This solves the bad names that were found from the files
 	this.replaceNameWithApiName = function (_ref2) {
-		var _ref2$filteredFiles = _slicedToArray(_ref2.filteredFiles, 1),
-		    shows = _ref2$filteredFiles[0],
+		var _ref2$showsAndMovies = _slicedToArray(_ref2.showsAndMovies, 1),
+		    shows = _ref2$showsAndMovies[0],
 		    showsData = _ref2.showsData;
 
 		var newShows = {};
@@ -1329,7 +1329,7 @@ var apiShows = function () {
 												showName = _step2.value;
 												season = shows[showName].season;
 
-												showName = showName.split(" ").join("%20"); //For api
+												showName = showName.replace(/[^\w\s]/gi, "").split(" ").join("%20"); //For api
 												baseUrl = "/?t=" + showName;
 												_context7.next = 13;
 												return Helper.getData(baseUrl);
@@ -1612,7 +1612,7 @@ var GetFiles = new GetFilesFuncs();
 _asyncToGenerator(_regenerator2.default.mark(function _callee2() {
 	var _this = this;
 
-	var _ref2, basePath, link, files, _filterFiles, dirs, video, other, filteredFiles, _ref3, _ref4, showsData, posters, moviesData, shows, newNames;
+	var _ref2, basePath, link, files, _filterFiles, dirs, video, other, showsAndMovies, _ref3, _ref4, showsData, posters, moviesData, shows, newNames;
 
 	return _regenerator2.default.wrap(function _callee2$(_context2) {
 		while (1) {
@@ -1640,11 +1640,11 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee2() {
 					_filterFiles = filterFiles(files), dirs = _filterFiles.dirs, video = _filterFiles.video, other = _filterFiles.other;
 
 					console.log("Filtering movies and tv shows files");
-					filteredFiles = filterShowsAndMovies(video);
+					showsAndMovies = filterShowsAndMovies(video);
 
 					console.log("Getting shows and movies data from OmdbAPI.com");
 					_context2.next = 17;
-					return apiShowsAndMovies(filteredFiles);
+					return apiShowsAndMovies(showsAndMovies);
 
 				case 17:
 					_ref3 = _context2.sent;
@@ -1652,7 +1652,7 @@ _asyncToGenerator(_regenerator2.default.mark(function _callee2() {
 					showsData = _ref4[0];
 					posters = _ref4[1];
 					moviesData = _ref4[2];
-					shows = Helper.replaceNameWithApiName({ filteredFiles: filteredFiles, showsData: showsData });
+					shows = Helper.replaceNameWithApiName({ showsAndMovies: showsAndMovies, showsData: showsData });
 
 					console.log("Making new folders for movies and tv shows");
 					basePath += Helper.generateRandomFolderName();
@@ -1766,7 +1766,7 @@ function findNewNamesForFiles(_ref9) {
 
 	var names = [];
 	video.map(function (file) {
-		return file.type === "movie" ? names.push(findNewNameForMovie(file, moviesData, file.fileStats.ext)) : "";
+		return file.type === "movie" ? names.push(findNewNameForMovie(file, moviesData)) : "";
 	});
 	Object.keys(shows).map(function (name) {
 		return names = [].concat(_toConsumableArray(names), _toConsumableArray(findNewNameForShow({ name: name, files: shows[name].files, showsData: showsData })));
@@ -1879,15 +1879,14 @@ function findNewNameForMovie(_ref13, moviesData) {
 		{
 			var _name = fileStats.name,
 			    season = fileStats.season,
-			    episodeNum = fileStats.episodeNum,
-			    ext = fileStats.ext;
+			    episodeNum = fileStats.episodeNum;
 
 			if (!_name) return;
 			var sameShow = Helper.sameShow(shows, _name, season);
 			if (!sameShow) {
-				shows[_name] = { season: [season], length: 1, files: [{ file: file, episodeNum: episodeNum, season: season, ext: ext }] };return;
+				shows[_name] = { season: [season], length: 1, files: [{ file: file, episodeNum: episodeNum, season: season }] };return;
 			} //New show detected
-			if (shows[_name] && shows[_name].hasOwnProperty("files")) shows[_name].files.push({ file: file, episodeNum: episodeNum, season: season, ext: ext });
+			if (shows[sameShow.name] && shows[sameShow.name].hasOwnProperty("files")) shows[sameShow.name].files.push({ file: file, episodeNum: episodeNum, season: season });
 			if (!sameShow.newSeason) return; //Same show detected
 			shows[sameShow.name].season.push(season); //Same show but different season
 			shows[sameShow.name].length += 1;
@@ -1898,9 +1897,13 @@ function findNewNameForMovie(_ref13, moviesData) {
 
 /* Removes empty dirs after the rename of the files */
 function removeDirs(files) {
-	files.map(function (file) {
-		return fs.rmdirSync(file);
-	}); //This just does not throw any errors
+	try {
+		files.map(function (file) {
+			return fs.rmdirSync(file);
+		});
+	} catch (e) {
+		console.log("Remove Dirs Error: " + new Error(e));
+	}
 }
 
 /* Makes folder for shows and movies */
